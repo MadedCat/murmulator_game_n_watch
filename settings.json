@@ -1,0 +1,4 @@
+{
+    "terminal.integrated.scrollback": 20000,
+    "task.autoDetect": "on"
+}
