@@ -1591,8 +1591,6 @@ int main(void){
 		printf("  + cfg_frame_rate:%d\n", cfg_frame_rate);
 	#endif
 	
-	gw_system_sound_init();
-
 	// ----------Init Sound------------
 	sound_timer_enabled=false;
 	printf("Init Sound - ");
@@ -2942,6 +2940,7 @@ int main(void){
 				gw_set_background();				
 			}
 
+			gw_system_sound_init();
 
 			menu_ptr=0;
 			fast_mode_ptr=0;

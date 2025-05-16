@@ -182,7 +182,8 @@ void gw_dump_struct(){
 
 void gw_assign_ptrs(){
 
-   GW_ROM = (uint8_t *)&game_buff[0];   
+   GW_ROM = (uint8_t *)&game_buff[0];
+   
    memcpy(&gw_head, (uint8_t*) &GW_ROM[0], sizeof(gw_head));
    //gw_dump_struct();
 
@@ -208,6 +209,9 @@ void gw_assign_ptrs(){
 }
 
 bool gw_romloader_rom2ram(char *file_name){
+   
+
+   memset(&game_buff[0],0,sizeof(game_buff));
    
    GW_ROM = (uint8_t *)&game_buff[0];
    

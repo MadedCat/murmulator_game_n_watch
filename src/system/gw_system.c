@@ -218,12 +218,10 @@ static void gw_system_sound_melody(unsigned char data){
 	}
 
 	// SM511 R pin is melody output
-	if (gw_melody != 0)
-
-		mspeaker_data = data;
-
-	// Piezo buzzer
-	else
+	if ((gw_melody != NULL)&&(!(gw_head.flags & FLAG_SOUND_MASK))){
+		mspeaker_data = data>>2;
+	}
+	else 	// Piezo buzzer
 	{
 
 		switch (gw_head.flags & FLAG_SOUND_MASK)
