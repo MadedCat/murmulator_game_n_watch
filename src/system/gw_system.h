@@ -29,7 +29,7 @@ __license__ = "GPLv3"
 #define GW_SCREEN_HEIGHT 240
 
 /* refresh rate 128Hz */
-#define GW_REFRESH_RATE 85
+#define GW_REFRESH_RATE 480
 
 /* System clock = Audio clock = 32768Hz */
 #define GW_SYS_FREQ 32768U

@@ -438,9 +438,9 @@ void updatePaletteGame(const uint8_t *palette,uint16_t length) {
         int B = palette[2];
 		for (uint8_t j = 0; j < 4; j++) {
 			if(j==1){
-				R -= (8);
-				G -= (8);
-				B -= (8);
+				R -= (12);
+				G -= (12);
+				B -= (12);
 			} else {
 				R -= (PALETTE_COL_DEC*j);
 				G -= (PALETTE_COL_DEC*j);
@@ -1339,11 +1339,20 @@ void gw_set_background(){
 	}	
 }
 
+repeating_timer_t emulation_timer;
+
+volatile bool emu_trigger=false;
+
+bool FAST_FUNC(Emu_callback)(repeating_timer_t *rt){
+	emu_trigger = true;
+	return true;
+}
+
 
 void Render_loop() {
 	multicore_lockout_victim_init();
 	while (true) {
-		if(emulation){
+		if(emulation) {
 			gw_system_blit(&graph_buf[0]);
 		}
 	}
@@ -1610,13 +1619,12 @@ int main(void){
 		//printf("init_fs>N_files:%d\n",N_files);
 	}  else printf("Init FS Fail\n");
 
-	
-
-	
-	//printf("Init draw timer\n");
-	//Init_Draw();
-
-	
+	printf("Init Emulation timer\n");
+	short int rate = GW_REFRESH_RATE;
+	if (!add_repeating_timer_us(-1000000 / rate, Emu_callback, NULL, &emulation_timer)) {
+		printf("Failed to add emulation timer\n");
+		//return false;
+	}
 
 	printf("Init graphics buffer\n");
 
@@ -1769,8 +1777,12 @@ int main(void){
 	
 	/*-------Emulation--------*/
     /* clear soft keys */
-    softkey_time_pressed = 0;
-    softkey_alarm_pressed = 0;
+	softkey_A_pressed		= 0;
+	softkey_B_pressed		= 0;
+	softkey_Game_A_pressed	= 0;
+	softkey_Game_B_pressed	= 0;
+	softkey_time_pressed	= 0;
+	softkey_alarm_pressed	= 0;
     softkey_duration = 0;
 	/*-------Emulation--------*/
 
@@ -2076,7 +2088,7 @@ int main(void){
 										MessageBox("GWM",temp_msg,CL_WHITE,CL_BLUE,0);
 										strcpy(romfilename,activefilename);
 										if(gw_romloader(romfilename)){
-											gw_dump_struct();
+											//gw_dump_struct();
 											if(gw_system_config()){
 												printf("G&W configured\n");
 											   gw_system_start();
@@ -2893,7 +2905,7 @@ int main(void){
 			if((gw_program!=NULL)&&(reload_last_rom)&&(strlen(romfilename)>0)){
 				if(gw_romloader(romfilename)){
 					gw_assign_ptrs();
-					gw_dump_struct();
+					//gw_dump_struct();
 					printf("Reload ROM - OK\n");
 				}
 			}
@@ -2905,7 +2917,7 @@ int main(void){
 				//printf("rom_size_dest:[%d]\n",rom_size_dest);
 				memcpy(game_buff, default_game, rom_size_dest);
 				gw_assign_ptrs();
-				gw_dump_struct();
+				//gw_dump_struct();
 
 				updatePaletteGame((uint8_t*)gw_background_pal, gw_head.background_palette_size);
 				gw_set_background();
@@ -2955,14 +2967,16 @@ int main(void){
 			do{
 				//printf("tap_loader_active>[%04X]\n",tap_loader_active);
 				ticker++;
-				gpio_put(WORK_LED_PIN,1);
-				if ((ticker%4096)==0){
-					gpio_put(WORK_LED_PIN,0);
+
+				//printf("ticker:[%d]\n",ticker);
+				//gpio_put(WORK_LED_PIN,1);
+				/*if ((ticker%1024)==0){
+					
 					//printf("beep\n");
 					//printf("%d\t\t%d\t\t%d\t\t%d\t\t%d\t\t%d\t\t%d\t\t%d\n",mixL,mixR,outL,outR,beeper_signed,tape_signed,beep_data,beep_data_old);
 					//printf("HM1>[%04X] %d\n",current_hud_mode,hud_timer);
-				}
-				if ((ticker%32)==0){
+				}*/
+				if ((ticker%262144)==0){
 					if(current_hud_mode&HM_SHOW_BATTERY){
 						get_battery_stats();
 					}
@@ -3058,7 +3072,7 @@ int main(void){
 				}
 				/*--HUD Switch--*/
 
-				if ((ticker%2)==0){ //4608
+				if ((ticker%32)==0){ //4608
 					process_input();
 					if(!kbd_lock){
 						//memset(zx_write_buffer->kb_data,0,8);
@@ -3487,11 +3501,16 @@ int main(void){
 					//for(uint8_t j=0;j<8;j++){//printf("\t%02X",zx_write_buffer->kb_data[j]);};//printf("\n");//DEBUG
 				}
 
+				//
 				/*-------Emulation--------*/
 				//if ((ticker%80)==0){
 				//}
-				if(emulation) {
-					//soft keys emulation
+				//soft keys emulation
+				if((emulation)&&(emu_trigger)){
+					emu_trigger=false;
+					gw_system_run(GW_SYS_FREQ / rate);
+					gpio_put(WORK_LED_PIN, gpio_get(WORK_LED_PIN)^1);
+					//printf("gw_system_run\n");
 					if (softkey_duration > 0)	softkey_duration--;
 					if (softkey_duration == 0){
 						softkey_A_pressed		= 0;
@@ -3499,11 +3518,10 @@ int main(void){
 						softkey_Game_A_pressed	= 0;
 						softkey_Game_B_pressed	= 0;
 						softkey_time_pressed	= 0;
-            			softkey_alarm_pressed	= 0;
-        			}					
-
-					gw_system_run(GW_SYS_FREQ / 1024);
-				}
+						softkey_alarm_pressed	= 0;
+					}					
+				}	
+			
 				/*while(graphics_draw_screen) {
 					busy_wait_us(5);
 					//continue;
@@ -3533,8 +3551,8 @@ int main(void){
 					gw_system_blit(&graph_buf[0]);
 				}
 				/*-------Emulation--------*/
-				gpio_put(WORK_LED_PIN,0);
-				if(ticker>1048576){ticker=0;}
+				//gpio_put(WORK_LED_PIN,0);
+				if(ticker>16777216){ticker=0;}
 				tight_loop_contents();
 			}while(menu_mode[menu_ptr]==EMULATION); //while(1) emulation loop
 			//END EMULATION LOOP

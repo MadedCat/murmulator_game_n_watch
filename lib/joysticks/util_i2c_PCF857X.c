@@ -29,17 +29,18 @@ uint32_t i2c_PCF_NES_joy(){
     uint8_t ret;
     uint32_t joy1=0;
     uint32_t joy2=0; 
+    busy_wait_us(200);
     ret = i2c_write_blocking(i2c_joy_port, I2C_PCF_NES_JOY_ADDR, &latch[0] ,2, true);
-        for(int i=0; i<QNT_IMP_NES; i++ )
-        {            
-            ret = i2c_write_blocking(i2c_joy_port, I2C_PCF_NES_JOY_ADDR, &high_clk[0], 2, true);
-            ret = i2c_read_blocking(i2c_joy_port, I2C_PCF_NES_JOY_ADDR, &i2c_joy_data[0], 1, true);
-            ret = i2c_write_blocking(i2c_joy_port, I2C_PCF_NES_JOY_ADDR, &low_clk[0], 2, true);
-            joy1 <<= 1;
-            joy2 <<= 1;
-            joy1 |= (0x01 & i2c_joy_data[0]);
-            joy2 |= ((0x02 & i2c_joy_data[0])>>1);                                
-         }
+    for(int i=0; i<QNT_IMP_NES; i++ ){            
+        ret = i2c_write_blocking(i2c_joy_port, I2C_PCF_NES_JOY_ADDR, &high_clk[0], 2, true);
+        ret = i2c_read_blocking(i2c_joy_port, I2C_PCF_NES_JOY_ADDR, &i2c_joy_data[0], 1, true);
+        ret = i2c_write_blocking(i2c_joy_port, I2C_PCF_NES_JOY_ADDR, &low_clk[0], 2, true);
+        joy1 <<= 1;
+        joy2 <<= 1;
+        joy1 |= (0x01 & i2c_joy_data[0]);
+        joy2 |= ((0x02 & i2c_joy_data[0])>>1);                                
+    }
+    busy_wait_us(200);
     ret = i2c_write_blocking(i2c_joy_port, I2C_PCF_NES_JOY_ADDR, &high_clk[0], 2, false);     
     result = (joy2<<16)|joy1;
     result = result<<(16-QNT_IMP_NES);
