@@ -2386,28 +2386,28 @@ int main(void){
 									case FAST_GAME_A: //Start game A
 										softkey_Game_A_pressed=true;
 										softkey_duration = GW_REFRESH_RATE;
-										resume_pause();
+										//resume_pause();
 										menu_mode[menu_ptr]=EMULATION;
 										continue;
 										break;
 									case FAST_GAME_B: //Start game B
 										softkey_Game_B_pressed=true;
 										softkey_duration = GW_REFRESH_RATE;
-										resume_pause();
+										//resume_pause();
 										menu_mode[menu_ptr]=EMULATION;
 										continue;
 										break;
 									case FAST_TIME: //Goto Time
 										softkey_time_pressed=true;
 										softkey_duration = GW_REFRESH_RATE;
-										resume_pause();
+										//resume_pause();
 										menu_mode[menu_ptr]=EMULATION;
 										continue;
 										break;
 									case FAST_ALARM: //Set Alarm
 										softkey_alarm_pressed=true;
 										softkey_duration = GW_REFRESH_RATE;
-										resume_pause();
+										//resume_pause();
 										menu_mode[menu_ptr]=EMULATION;
 										continue;
 										break;
