@@ -31,6 +31,18 @@ __license__ = "GPLv3"
 #include "gw_system.h"
 #include "gw_graphic.h"
 
+
+#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
+#define BYTE_TO_BINARY(byte)  \
+(byte & 0x80 ? '1' : '0'), \
+(byte & 0x40 ? '1' : '0'), \
+(byte & 0x20 ? '1' : '0'), \
+(byte & 0x10 ? '1' : '0'), \
+(byte & 0x08 ? '1' : '0'), \
+(byte & 0x04 ? '1' : '0'), \
+(byte & 0x02 ? '1' : '0'), \
+(byte & 0x01 ? '1' : '0') 
+
 static void (*device_reset)();
 static void (*device_start)();
 static void (*device_run)();
@@ -120,7 +132,7 @@ bool gw_system_config(){
 	}
 
 	/* init dpad to default position */
-	previous_dpad = 0;
+	previous_dpad = 0x00;
 
 	/* depending on the CPU, set functions pointers */
 
@@ -384,17 +396,32 @@ static unsigned int patch_gnw_ghouse_keys_rotated_view(unsigned int keys_pressed
 	return keys_pressed;
 }
 
+volatile unsigned int dpad_shortcut_diagonal_pressed = 0;
+volatile unsigned int dpad_shortcut_diagonal_hold = 0;
+
+
 // default value is 0 (Pull-down)
 unsigned char gw_readK(unsigned char io_S)
 {
 
 	unsigned char io_K = 0;
-	static unsigned int dpad_shortcut_diagonal_pressed = 0;
-	static unsigned int dpad_shortcut_diagonal_hold = 0;
 
 	unsigned int gw_buttons = gw_get_buttons();
 
 	unsigned int keys_pressed = gw_buttons & 0xff;
+
+	if ((keys_pressed == GW_BUTTON_LEFT)&&(previous_dpad==0)){
+		previous_dpad|=GW_BUTTON_UP;
+	}
+	if ((keys_pressed == GW_BUTTON_RIGHT)&&(previous_dpad==0)){
+		previous_dpad|=GW_BUTTON_UP;
+	}
+	if ((keys_pressed == GW_BUTTON_UP)&&(previous_dpad==0)){
+		previous_dpad|=GW_BUTTON_LEFT;
+	}
+	if ((keys_pressed == GW_BUTTON_DOWN)&&(previous_dpad==0)){
+		previous_dpad|=GW_BUTTON_LEFT;
+	}
 
 	unsigned int key_soft_value = 0;
 
@@ -454,7 +481,7 @@ unsigned char gw_readK(unsigned char io_S)
 			// DPAD multi-key with relative change and shortcut
 			if (gw_keyboard_multikey[Sx])
 			{
-
+				
 				// keep only relevant DPAD keys
 				keys_pressed = keys_pressed & (GW_BUTTON_LEFT + GW_BUTTON_RIGHT + GW_BUTTON_UP + GW_BUTTON_DOWN);
 
@@ -480,6 +507,7 @@ unsigned char gw_readK(unsigned char io_S)
 				if (keys_pressed == GW_BUTTON_UP)
 					keys_pressed = (previous_dpad & (GW_BUTTON_LEFT + GW_BUTTON_RIGHT)) | GW_BUTTON_UP;
 
+				//printf("keys_pressed:["BYTE_TO_BINARY_PATTERN"] previous_dpad:["BYTE_TO_BINARY_PATTERN"]\n",BYTE_TO_BINARY(keys_pressed),BYTE_TO_BINARY(previous_dpad));				
 				if ((gw_keyboard[Sx] & GW_MASK_K1) == keys_pressed)
 				{
 					io_K |= 0x1;

@@ -25,17 +25,6 @@
 
 #define SHOW_SCREEN_DELAY 1000 //в милисекундах
 
-#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
-#define BYTE_TO_BINARY(byte)  \
-(byte & 0x80 ? '1' : '0'), \
-(byte & 0x40 ? '1' : '0'), \
-(byte & 0x20 ? '1' : '0'), \
-(byte & 0x10 ? '1' : '0'), \
-(byte & 0x08 ? '1' : '0'), \
-(byte & 0x04 ? '1' : '0'), \
-(byte & 0x02 ? '1' : '0'), \
-(byte & 0x01 ? '1' : '0') 
-
 
 #include <pico.h>
 #include <stdio.h>
@@ -1093,8 +1082,8 @@ bool FAST_FUNC(Sound_timer_callback)(repeating_timer_t *rt){
 	
 	outL_old=outL;
 	outR_old=outR;
-	outL=(gw_audio_buffer[audio_buffer_idx] << 5);
-	outR=(gw_audio_buffer[audio_buffer_idx+1] << 5);
+	outL=((gw_audio_buffer[audio_buffer_idx]&0x01) << 7);
+	outR=((gw_audio_buffer[audio_buffer_idx]&0x01) << 7);
 	if(cfg_sound_out_mode==OUT_PWM){
 		pwm_set_gpio_level(ZX_AY_PWM_PIN0,(uint8_t)((outR*cfg_volume)/100)); // Право
 		pwm_set_gpio_level(ZX_AY_PWM_PIN1,(uint8_t)((outL*cfg_volume)/100)); // Лево
@@ -3170,9 +3159,11 @@ int main(void){
 						}
 						*/
 						if((!joy_pressed)&&((rel_data_joy&D_JOY_START)||((rel_data_joy>>16)&D_JOY_START))&&(hat_switch==0)){
+							gw_system_sound_init();
 							menu_ptr++;
 							menu_mode[menu_ptr]=MENU_JOY_MAIN;
 							rel_data_joy=data_joy;
+
 							break;
 						}
 					}
