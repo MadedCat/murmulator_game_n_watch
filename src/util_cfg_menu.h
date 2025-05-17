@@ -2,26 +2,25 @@
 #include <pico/stdlib.h>
 #include "util_cfg.h"
 
-#define CONFIG_MENU_ITEMS 20
+#define CONFIG_MENU_ITEMS 16
 
 const char __in_flash() *config_menu[CONFIG_MENU_ITEMS]={
 	"Boot go to  :[            ]",	//0
-	"Head Up Display:     [    ]",	//1
-	"Sound out mode:       [   ]",	//2
-	"Sound Vol:     [          ]",	//3
-	"Video output:  [          ]",	//4
-	"Video framerate:   [      ]",	//5
-	"Mobile Murmulator:    [   ]",	//6
-	"LCD BrightLev: [          ]",  //7
-	"LCD Rotate:    [          ]",  //8
-	"LCD inversion: [          ]",  //9
-	"LCD Pixel format:   [     ]",  //10
-	"           [LOAD]          ",  //11
-	"          [DEFAULT]        ",  //12
-	"           [SAVE]          ",  //13
-	"     [UPDATE FIRMWARE]     ",  //14
-	"       [!!!REBOOT!!!]      ",  //15
-	"\0",	//26
+	"Sound out mode:       [   ]",	//1
+	"Sound Vol:     [          ]",	//2
+	"Video output:  [          ]",	//3
+	"Video framerate:   [      ]",	//4
+	"Mobile Murmulator:    [   ]",	//5
+	"LCD BrightLev: [          ]",  //6
+	"LCD Rotate:    [          ]",  //7
+	"LCD inversion: [          ]",  //8
+	"LCD Pixel format:   [     ]",  //9
+	"           [LOAD]          ",  //10
+	"          [DEFAULT]        ",  //11
+	"           [SAVE]          ",  //12
+	"     [UPDATE FIRMWARE]     ",  //13
+	"       [!!!REBOOT!!!]      ",  //14
+	"\0",	//15
 };
 
 const char __in_flash() *boot_scr_config[3]={

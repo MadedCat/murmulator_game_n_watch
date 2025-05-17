@@ -901,39 +901,36 @@ void draw_config_menu(uint8_t xPos,uint8_t yPos,bool drawbg,uint8_t active){
 			draw_text_len(xPos+(14*FONT_W),(yPos+FONT_H)+(y*FONT_H),boot_scr_config[cfg_boot_scr],COLOR_TEXT,y==active?COLOR_CURRENT_BG:COLOR_BACKGOUND,12);
 		}	
 		if(y==1){
-			draw_text_len(xPos+(22*FONT_W),(yPos+FONT_H)+(y*FONT_H),HUD_config[cfg_hud_enable],COLOR_TEXT,y==active?COLOR_CURRENT_BG:COLOR_BACKGOUND,4);
-		}		
-		if(y==2){
 			draw_text_len(xPos+(23*FONT_W),(yPos+FONT_H)+(y*FONT_H),sound_out_config[cfg_sound_out_mode],COLOR_TEXT,y==active?COLOR_CURRENT_BG:COLOR_BACKGOUND,3);
 		}
-		if(y==3){
+		if(y==2){
 			draw_text_len(xPos+(16*FONT_W),(yPos+FONT_H)+(y*FONT_H),gaudge[(cfg_volume/25)],COLOR_TEXT,y==active?COLOR_CURRENT_BG:COLOR_BACKGOUND,10);
 		}
-		if(y==4){
+		if(y==3){
 			draw_text_len(xPos+(16*FONT_W),(yPos+FONT_H)+(y*FONT_H),video_out_config[cfg_video_out],COLOR_TEXT,y==active?COLOR_CURRENT_BG:COLOR_BACKGOUND,10);
 		}
-		if(y==5){
+		if(y==4){
 			if(graphics_try_framerate((g_out)cfg_video_out,(fr_rate)cfg_frame_rate,false)){
 				draw_text_len(xPos+(20*FONT_W),(yPos+FONT_H)+(y*FONT_H),video_freq_config[cfg_frame_rate],COLOR_TEXT,y==active?COLOR_CURRENT_BG:COLOR_BACKGOUND,6);
 			} else {
 				draw_text_len(xPos+(20*FONT_W),(yPos+FONT_H)+(y*FONT_H),video_freq_config[cfg_frame_rate],COLOR_DTEXT,y==active?COLOR_CURRENT_BG:COLOR_BACKGOUND,6);
 			}
 		}
-		if(y==6){
+		if(y==5){
 			draw_text_len(xPos+(23*FONT_W),(yPos+FONT_H)+(y*FONT_H),yes_no[cfg_mobile_mode],COLOR_TEXT,y==active?COLOR_CURRENT_BG:COLOR_BACKGOUND,3);
 		}		
 		#ifdef VGA_HDMI
 		if((g_out)cfg_video_out>g_out_HDMI){
-			if(y==7){
+			if(y==6){
 				draw_text_len(xPos+(16*FONT_W),(yPos+FONT_H)+(y*FONT_H),gaudge[cfg_brightness],COLOR_TEXT,y==active?COLOR_CURRENT_BG:COLOR_BACKGOUND,10);
 			}
-			if(y==8){
+			if(y==7){
 				draw_text_len(xPos+(16*FONT_W),(yPos+FONT_H)+(y*FONT_H),video_out_rotate[cfg_rotate],COLOR_TEXT,y==active?COLOR_CURRENT_BG:COLOR_BACKGOUND,10);
 			}
-			if(y==9){
+			if(y==8){
 				draw_text_len(xPos+(16*FONT_W),(yPos+FONT_H)+(y*FONT_H),video_out_inversion[cfg_inversion],COLOR_TEXT,y==active?COLOR_CURRENT_BG:COLOR_BACKGOUND,10);
 			}		
-			if(y==10){
+			if(y==9){
 				draw_text_len(xPos+(21*FONT_W),(yPos+FONT_H)+(y*FONT_H),video_out_pixels[cfg_pixels],COLOR_TEXT,y==active?COLOR_CURRENT_BG:COLOR_BACKGOUND,5);
 			}		
 		}
@@ -2546,20 +2543,7 @@ int main(void){
 										cfg_boot_scr=MAX_CFG_BOOT_SCR_MODE;
 									}
 								}							
-								if (settings_index==1){ //Head Up Display:
-									cfg_hud_enable+=menu_inc_dec;
-									if((cfg_hud_enable>MAX_CFG_HUD_MODE)&&(menu_inc_dec>0)){
-										cfg_hud_enable=0;
-									}
-									if((cfg_hud_enable>MAX_CFG_HUD_MODE)&&(menu_inc_dec<0)){
-										cfg_hud_enable=MAX_CFG_HUD_MODE;
-									}
-									if(cfg_hud_enable!=current_hud_mode){
-										current_hud_mode&=~0x03;
-										current_hud_mode|=cfg_hud_enable;
-									}
-								}							
-								if (settings_index==2){ //Sound out mode:
+								if (settings_index==1){ //Sound out mode:
 									cfg_sound_out_mode+=menu_inc_dec;
 									if((cfg_sound_out_mode>MAX_CFG_OUT_MODE)&&(menu_inc_dec>0)){
 										cfg_sound_out_mode=0;
@@ -2568,7 +2552,7 @@ int main(void){
 										cfg_sound_out_mode=MAX_CFG_OUT_MODE;
 									}
 								}
-								if (settings_index==3){ //Soft Sound Vol:
+								if (settings_index==2){ //Soft Sound Vol:
 									cfg_volume+=(menu_inc_dec*CFG_VOLUME_STEP);
 									if((cfg_volume>MAX_CFG_VOLUME_MODE)&&(menu_inc_dec>0)){
 										cfg_volume=MAX_CFG_VOLUME_MODE;
@@ -2577,7 +2561,7 @@ int main(void){
 										cfg_volume=0;
 									}
 								}
-								if (settings_index==4){ //Video output:
+								if (settings_index==3){ //Video output:
 									cfg_video_out+=(uint8_t)menu_inc_dec;
 									if((cfg_video_out>MAX_CFG_VIDEO_MODE)&&(menu_inc_dec>0)){
 										cfg_video_out=0;
@@ -2603,7 +2587,7 @@ int main(void){
 										//printf("Test framerate end \n");
 									//}
 								}	
-								if (settings_index==5){ //Video framerate:
+								if (settings_index==4){ //Video framerate:
 									cfg_frame_rate+=menu_inc_dec;
 									if((cfg_frame_rate>MAX_CFG_VIDEO_FREQ_MODE)&&(menu_inc_dec>0)){
 										cfg_frame_rate=0;
@@ -2621,7 +2605,7 @@ int main(void){
 										if(test==0) break;
 									}
 								}
-								if (settings_index==6){ //Mobile Murmulator:
+								if (settings_index==5){ //Mobile Murmulator:
 									cfg_mobile_mode+=menu_inc_dec;
 									if((cfg_mobile_mode>MAX_CFG_MOBILE_MODE)&&(menu_inc_dec>0)){
 										cfg_mobile_mode=MAX_CFG_MOBILE_MODE;
@@ -2632,7 +2616,7 @@ int main(void){
 								}								
 								#ifdef VGA_HDMI
 								if((g_out)cfg_video_out>g_out_HDMI){
-									if (settings_index==7){ //LCD BrightLev:
+									if (settings_index==6){ //LCD BrightLev:
 										cfg_brightness+=menu_inc_dec;
 										if((cfg_brightness>MAX_CFG_BRIGHT_MODE)&&(menu_inc_dec>0)){
 											cfg_brightness=MAX_CFG_BRIGHT_MODE;
@@ -2642,7 +2626,7 @@ int main(void){
 										}
 										pwm_set_gpio_level(TFT_LED_PIN,(TFT_MIN_BRIGHTNESS+(cfg_brightness*10)));			//уровень подсветки TFT
 									}
-									if (settings_index==8){ //LCD Rotate:
+									if (settings_index==7){ //LCD Rotate:
 										cfg_rotate+=menu_inc_dec;
 										if((cfg_rotate>MAX_CFG_ROTATE)&&(menu_inc_dec>0)){
 											cfg_rotate=MAX_CFG_ROTATE;
@@ -2651,7 +2635,7 @@ int main(void){
 											cfg_rotate=0;
 										}
 									}	
-									if (settings_index==9){ //LCD Inversion:
+									if (settings_index==8){ //LCD Inversion:
 										cfg_inversion+=menu_inc_dec;
 										if((cfg_inversion>MAX_CFG_INVERSION)&&(menu_inc_dec>0)){
 											cfg_inversion=MAX_CFG_INVERSION;
@@ -2660,7 +2644,7 @@ int main(void){
 											cfg_inversion=0;
 										}
 									}
-									if (settings_index==10){ //LCD Pixel format:
+									if (settings_index==9){ //LCD Pixel format:
 										cfg_pixels+=menu_inc_dec;
 										if((cfg_pixels>MAX_CFG_PIXELS)&&(menu_inc_dec>0)){
 											cfg_pixels=MAX_CFG_PIXELS;
@@ -3444,38 +3428,6 @@ int main(void){
 						clear_input();
 					}
 					/*switch input mode*/
-					/*switch HUD*/
-					if (KBD_F11){ //Show HUD
-						uint8_t chm = current_hud_mode&0x03;
-						chm++;
-						//printf("CHM>%d\n",chm);
-						if(chm>HM_TIME)chm=HM_OFF;
-						if(chm==HM_OFF){
-							MessageBox("HUD is ON","\0",CL_GREEN,CL_WHITE,2);
-							gw_set_background();
-							hud_timer=0;
-							current_hud_mode=HM_ON;
-							current_hud_mode|=HM_MAIN_HUD;
-							continue;
-						} 
-						if(chm==HM_ON){
-							hud_timer=my_millis();
-							current_hud_mode=HM_TIME;
-							current_hud_mode|=HM_MAIN_HUD;
-							MessageBox("HUD is OFF by TIME","\0",CL_BLUE,CL_WHITE,2);
-							gw_set_background();
-							continue;
-						}
-						if(chm==HM_TIME){
-							hud_timer=0;
-							current_hud_mode=HM_OFF;
-							MessageBox("HUD is OFF","\0",CL_BLUE,CL_WHITE,2);
-							gw_set_background();
-							continue;
-						}
-						clear_input();
-					}
-					/*switch HUD*/
 					/*--QUICK FILE OPERATIONS--*/
 					if(init_fs){
 					}

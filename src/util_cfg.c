@@ -35,11 +35,6 @@ const char __in_flash()*default_config_file[]={
 "; 1 - SHOW FILE MANAGER \r\n\0",
 "; 2 - EMULATION \r\n\0",
 "boot_scr:0\r\n\0",
-"; [Head Up Display]\r\n\0",
-"; 0 - OFF \r\n\0",
-"; 1 - On \r\n\0",
-"; 2 - Time \r\n\0",
-"hud_enable:1\r\n\0",
 "; [Sound OUT]\r\n\0",
 "; 0 - PWM\r\n\0",
 "; 1 - PCM\r\n\0",
@@ -104,7 +99,6 @@ char param[50];
 
 void config_defaults() {
 	cfg_boot_scr = DEF_CFG_BOOT_SCR_MODE;
-	cfg_hud_enable = DEF_CFG_HUD_MODE;
 	cfg_sound_out_mode = DEF_CFG_OUT_MODE;
 	cfg_volume = DEF_CFG_VOLUME_MODE;
 	cfg_video_out = DEF_CFG_VIDEO_MODE;
@@ -206,14 +200,6 @@ bool config_read() {
 				}
 				//printf("  + cfg_boot_scr:%d\n", cfg_boot_scr);
 			} else 
-			if(strcasecmp(param, "hud_enable") == 0){
-				if(strlen(line)>0){
-					cfg_hud_enable = atoi(line);
-				} else {
-					cfg_hud_enable=DEF_CFG_HUD_MODE;
-				}
-				//printf("  + cfg_hud_enable:%d\n", cfg_hud_enable);
-			} else 			
 			if(strcasecmp(param, "sound_out") == 0){
 				if(strlen(line)>0){
 					cfg_sound_out_mode = atoi(line);
@@ -405,13 +391,6 @@ bool config_save(){
 			if(strcasecmp(param, "boot_scr") == 0){
 				//printf("  + boot_scr:%d\n", cfg_boot_scr);
 				sprintf(line,"boot_scr:%d\n",cfg_boot_scr);
-				bytesToWrite = strlen(line);
-				fd = sd_write_file(&sd_file,line, bytesToWrite,&bytesWritten);
-				if (fd!=FR_OK){sd_close_file(&sd_file);return false;}
-			} else 
-			if(strcasecmp(param, "hud_enable") == 0){
-				//printf("  + hud_enable:%d\n", cfg_hud_enable);
-				sprintf(line,"hud_enable:%d\n",cfg_hud_enable);
 				bytesToWrite = strlen(line);
 				fd = sd_write_file(&sd_file,line, bytesToWrite,&bytesWritten);
 				if (fd!=FR_OK){sd_close_file(&sd_file);return false;}
