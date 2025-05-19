@@ -2514,7 +2514,7 @@ int main(void){
 							is_new_screen=false;
 							need_redraw=true;
 							busy_wait_ms(150);
-							clear_input();
+							clear_input(); 
 						}
 						if((KBD_F12)||(KBD_ESC)||(data_joy&D_JOY_START)||(KBD_HOME)||(KBD_L_WIN)||(KBD_R_WIN)){
 							fast_menu_index=old_menu_index;
