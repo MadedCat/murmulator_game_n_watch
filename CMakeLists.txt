@@ -33,7 +33,7 @@ set(PICO_PLATFORM "rp2040" CACHE STRING "Chip type")
 
 set (VERSION_MAJOR 0)
 set (VERSION_MINOR 1)
-set (VERSION_PATCH 16)
+set (VERSION_PATCH 17)
 set (SOFT_VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 set (SOFT_VERSION_FN ${VERSION_MAJOR}_${VERSION_MINOR}_${VERSION_PATCH})
 
@@ -45,11 +45,11 @@ project(murmulator C CXX ASM)
 
 
 
-option(VGA "Enable VGA" OFF)
-option(TFT "Enable TFT display" OFF)
-option(HDMI "Enable HDMI display" OFF)
-option(TV "Enable TV composite output" OFF)
-option(SOFTTV "Enable TV soft composite output" OFF)
+#option(VGA "Enable VGA" OFF)
+#option(TFT "Enable TFT display" OFF)
+#option(HDMI "Enable HDMI display" OFF)
+#option(TV "Enable TV composite output" OFF)
+#option(SOFTTV "Enable TV soft composite output" OFF)
 
 SET(PROJECT_NAME "Murmulator_GnW_vga-hdmi-tft_${SOFT_VERSION_FN}_m1_p1")
 SET(BUILD_NAME "${PROJECT_NAME}_${SOFT_VERSION}")
