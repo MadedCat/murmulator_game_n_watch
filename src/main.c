@@ -4,7 +4,7 @@
 
 // #define PICO_FLASH_SIZE_BYTES (4 * 1024 * 1024)
 
-//#define DEBUG_DELAY
+#define DEBUG_DELAY
 
 //#define DEBUG_BLINK
 

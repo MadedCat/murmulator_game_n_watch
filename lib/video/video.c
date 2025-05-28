@@ -18,6 +18,9 @@
 #include "../../src/hud_func.h"
 
 #define PALETTE_SHIFT (220)
+#define PALETTE_IDX_INC (50)
+
+#define WORK_LED_PIN (25)
 
 #ifndef SCREEN_WIDTH
 #define SCREEN_WIDTH 320
@@ -156,6 +159,60 @@ static const struct pio_program program_pio_TFT = {
 };
 
 /******TFT******/
+
+/******LCD******/
+
+#define LCD_CLK_DIV 16.0f //22.0f //22.0f //64.0 //39.0
+//#define HEADER_32Bit_ALIGN_LCD (16)
+#define LCD_UPD_CMD     0x01    //0x80
+#define LCD_VCOM_CMD    0x02    //0x40
+#define LCD_CLEAR_CMD   0x03    //0x20
+
+#define DISP_HIGH()     gpio_put(TFT_RST_PIN, 1)
+#define DISP_LOW()      gpio_put(TFT_RST_PIN, 0)
+
+#define LCD_HOR_RESOLUTION	(400)
+#define LCD_VER_RESOLUTION	(240)
+
+#define EXTCOMIN_FREQ   (2)
+
+#define mono_lcd_wrap_target 0
+#define mono_lcd_wrap 20
+
+static const uint16_t mono_lcd_program_instructions[] = {
+            //     .wrap_target
+    0xe001, //  0: set    pins, 1         side 0     
+    0xe024, //  1: set    x, 4            side 0     
+    0xaf42, //  2: nop                    side 0 [15]
+    0x0042, //  3: jmp    x--, 2          side 0     
+    0x80a0, //  4: pull   block           side 0     
+    0x6030, //  5: out    x, 16           side 0     
+    0x002e, //  6: jmp    !x, 14          side 0     
+    0xa0c1, //  7: mov    isr, x          side 0     
+    0x6050, //  8: out    y, 16           side 0     
+    0x80a0, //  9: pull   block           side 0     
+    0x6001, // 10: out    pins, 1         side 0     
+    0x104a, // 11: jmp    x--, 10         side 1     
+    0xa026, // 12: mov    x, isr          side 0     
+    0x0089, // 13: jmp    y--, 9          side 0     
+    0xe028, // 14: set    x, 8            side 0     
+    0xaf42, // 15: nop                    side 0 [15]
+    0x004f, // 16: jmp    x--, 15         side 0     
+    0xe000, // 17: set    pins, 0         side 0     
+    0xe023, // 18: set    x, 3            side 0     
+    0xa542, // 19: nop                    side 0 [5] 
+    0x0053, // 20: jmp    x--, 19         side 0     
+            //     .wrap
+};
+
+static const struct pio_program mono_lcd_program = {
+    .instructions = mono_lcd_program_instructions,
+    .length = 21,
+    .origin = -1,
+};
+
+/******LCD******/
+
 
 typedef struct V_MODE{
 	int VS_begin;
@@ -429,7 +486,31 @@ const V_MODE __in_flash() v_mode_320x240x85t 	={
 };
 /******TFT******/
 
-#define MAX_ALLOWED_MODE (26)
+/******LCD******/
+//320x240x60 - lcd
+const V_MODE __in_flash() v_mode_320x240x60l 	={
+	.VS_begin			=	0,
+	.VS_end				=	320,
+	.V_total_lines		=	250,
+	.V_visible_lines	=	240,
+
+	.HS_len				=	0,
+	.H_len				=	54, //54*32bit
+	.H_visible_begin	=	0,
+	.H_visible_len		=	320,
+
+	.VS_TMPL			=	0,
+	.VHS_TMPL			=	0,
+	.HS_TMPL			=	0,
+	.NO_SYNC_TMPL		=	0,
+	.FR_RATE 			=	rate_60Hz,
+	.CLK_SPD			=	31500000.0,
+	.is_flash_line		=	true,
+	.is_flash_frame		=	true
+};
+/******LCD******/
+
+#define MAX_ALLOWED_MODE (27)
 
 static const ALLOWED_MODE mode_table[MAX_ALLOWED_MODE] = {
 	{g_out_VGA			,&v_mode_640x480x60v},
@@ -463,7 +544,9 @@ static const ALLOWED_MODE mode_table[MAX_ALLOWED_MODE] = {
 	{g_out_TFT_GC9A01	,&v_mode_320x240x72t},
 	{g_out_TFT_GC9A01	,&v_mode_320x240x75t},
 	{g_out_TFT_GC9A01	,&v_mode_320x240x85t},
- 
+	//lcd section
+	{g_out_LCD_LS027B7DH01	,&v_mode_320x240x60l}
+
 };
 
 static G_BUFFER g_buf={
@@ -813,6 +896,82 @@ void TFT_prepare_buffer(){
 
 /******TFT******/
 
+/******LCD******/
+repeating_timer_t lcd_refresh_timer;
+static bool ExtPinLast = false;
+/*
+bool __not_in_flash_func (lcd_refresh_timer_callback(repeating_timer_t *rt)){
+    gpio_put(TFT_DC_PIN, ExtPinLast);
+    ExtPinLast = !ExtPinLast;
+	return true;
+}
+
+void lcd_refresh_start(uint16_t hz){
+	if (!add_repeating_timer_us(1000000 / hz, lcd_refresh_timer_callback, NULL, &lcd_refresh_timer)) {
+		return ;
+	}
+}
+
+void lcd_refresh_stop(){
+	cancel_repeating_timer (&lcd_refresh_timer);
+}
+*/
+
+void lcd_Clear(){
+    TFT_wait_idle(PIO_VIDEO, SM_video);
+	TFT_put(PIO_VIDEO, SM_video, 0x0001000F); // Send 32 bit length 
+	TFT_put(PIO_VIDEO, SM_video, 0xFFFF0003); // Send 32 bit length 
+	TFT_put(PIO_VIDEO, SM_video, 0xFFFF0000); // Send 32 bit length 
+    TFT_wait_idle(PIO_VIDEO, SM_video);    
+}
+
+void lcd_PowerOn(){
+    busy_wait_us(150);
+    lcd_Clear();
+    busy_wait_us(30);
+    DISP_HIGH();
+    busy_wait_us(30);
+    //lcd_refresh_start(EXTCOMIN_FREQ); //turn on EXTCOMIN pulse
+    //busy_wait_us(30);
+}
+
+void lcd_PowerOff(){
+    lcd_Clear();
+    DISP_LOW();
+    //lcd_refresh_stop();  	//stop EXTCOMIN pulse
+    busy_wait_us(30);
+}
+
+static void lcd_UpdateLine(uint8_t line, uint8_t *buf){
+	if(line > LCD_VER_RESOLUTION) return;
+  	uint32_t buff;
+	TFT_wait_idle(PIO_VIDEO, SM_video);
+	TFT_put(PIO_VIDEO, SM_video, 0x001A000F); // Send 32 bit length 
+	TFT_put(PIO_VIDEO, SM_video, (0x00000001)|(line<<8)); // 0
+	for(uint16_t dot = 0; dot < 26; dot++) {
+    	buff = (uint32_t)((*buf++)|(*buf++<<8));
+		TFT_put(PIO_VIDEO, SM_video, buff);    	
+  	}
+	TFT_wait_idle(PIO_VIDEO, SM_video);
+}
+
+void lcd_prepare_buffer(){
+	uint lines_buf_inx=0;
+	for (uint8_t i=0;i<N_LINE_BUF;i++){
+		memset32(&lines_buf[lines_buf_inx],0x00000000,LINE_SIZE_MAX/4);
+		uint32_t* out_buf32=(uint32_t*)lines_buf[lines_buf_inx];
+		*out_buf32++ = 0x001A000F; //1A - 27 packets , 0F - 16 bit length
+		*out_buf32++ = 0x00000001; //01 - display cmd
+		lines_buf_inx=(lines_buf_inx+1)%N_LINE_BUF;		
+	}
+	lines_buf_inx=0;
+	for (uint8_t i=0;i<N_LINE_BUF_DMA;i++){
+		rd_addr_DMA_CTRL[i]=(uint32_t)&lines_buf[lines_buf_inx];
+		lines_buf_inx=(lines_buf_inx+1)%N_LINE_BUF;
+	}
+}
+
+/******LCD******/				 
 volatile uint dma_inx_out=0;
 volatile uint lines_buf_inx=0;
 
@@ -823,12 +982,14 @@ volatile uint16_t c_no_sync_tpl	= 0;
 
 
 #pragma GCC push_options
-#pragma GCC optimize("-Ofast") //fast
-//#pragma GCC optimize("-Os") //fast
+//#pragma GCC optimize("-Ofast") //fast
+#pragma GCC optimize("-Os") //fast
 
 //основная функция заполнения буферов видеоданных
 __attribute__((optimize("unroll-loops"))) void __not_in_flash_func(main_video_loop)(){
 	
+	gpio_put(WORK_LED_PIN, gpio_get(WORK_LED_PIN)^1);
+
 	//static uint dma_inx_out=0;
 	//static uint lines_buf_inx=0;
 
@@ -845,7 +1006,10 @@ __attribute__((optimize("unroll-loops"))) void __not_in_flash_func(main_video_lo
 	uint32_t* out_buf32=0;
 	int line=line_active;
 
+	
+	
 	while(dma_inx_out!=dma_inx){
+		
 		line=line_active;
 		line_active++;
 		//printf("line:[%d]  lines_buf_inx:[%d]\n",line,lines_buf_inx);
@@ -1088,7 +1252,7 @@ __attribute__((optimize("unroll-loops"))) void __not_in_flash_func(main_video_lo
 				graphics_draw_screen=false;
 			}
 		}
-		if(active_out>g_out_HDMI){
+		if((active_out>g_out_HDMI)&&(active_out<g_out_LCD_LS027B7DH01)){
 			graphics_draw_screen=false;
 			if (line_active==(hw_mode.V_total_lines)) {line_active=0;vbuf=g_buf.data;graphics_frame_count++;} //frame_i++;
 			if (line_active<=(hw_mode.V_visible_lines)){
@@ -1181,6 +1345,154 @@ __attribute__((optimize("unroll-loops"))) void __not_in_flash_func(main_video_lo
 			}
 			//if(line==hw_mode.V_visible_lines) continue;
 		}
+		if(active_out==g_out_LCD_LS027B7DH01){
+			//vbuf=g_buf.data;
+			if (line_active==hw_mode.V_total_lines) {line_active=0;vbuf=g_buf.data;graphics_frame_count++; ExtPinLast = !ExtPinLast;} //frame_i++;
+			if (line_active<hw_mode.V_visible_lines){
+				graphics_draw_screen=true;
+				switch (active_mode){
+					case g_mode_320x240x4bpp:
+					case g_mode_320x240x8bpp:
+						//320x240 графика
+						//передаём команды отрисовки строки
+						out_buf32=(uint32_t*)lines_buf[lines_buf_inx];
+						*out_buf32++ = 0x001A000F;	//001A - 26 words, 000F - 16 bit length
+						*out_buf32++ = (0x00000001)|(line<<8)|(ExtPinLast==true?0x00:LCD_VCOM_CMD);
+						*out_buf32++;
+						*out_buf32++;
+						uint i_pal=0;
+						int line_i=line_active;
+						uint8_t* vbuf8;
+						uint8_t* ovlbuf8;
+						//для 4-битного буфера
+						if (active_mode==g_mode_320x240x4bpp){
+							if (vbuf!=NULL){
+								vbuf8=vbuf+((line)*(g_buf.width/2));
+								//graphics_begin_screen = true;
+								ovlbuf8 = NULL;
+								if((*g_buf.handler)!=NULL){
+									if((*g_buf.handler)(line)){
+										ovlbuf8 = g_buf.overlay;
+									}
+								}
+								for(int i=0;i<(hw_mode.H_visible_len/16);i++){
+									uint32_t pixels=0;
+									for(int j=0;j<8;j++){
+										if(ovlbuf8 != NULL){ //if((i>15)&&(i<(15+128))&&
+											uint16_t pix = ((*ovlbuf8++)<<8)|(*ovlbuf8++);
+											pixels=pixels>>1;
+											pixels|= conv_color[(((pix&0xFF00)>>8)<0x10)?((pix&0xFF00)>>8):(*vbuf8&0x0F)];
+											//pixels|= (((pix&0xF0)>>8)>0?0x0000:0x8000);
+											pixels=pixels>>1;
+											pixels|= conv_color[((pix&0xFF)<0x10)?(pix&0xFF):((*vbuf8&0xF0)>>4)];
+											//pixels|= ((pix&0x0F)>0?0x0000:0x8000);
+											*vbuf8++;
+										} else {
+											pixels=pixels>>1;
+											pixels|= conv_color[(*vbuf8&0x0F)];//((conv_color[*vbuf8&0x0f])>>pwm_cnt)&0x01;
+											pixels=pixels>>1;
+											pixels|=conv_color[((*vbuf8&0xF0)>>4)];//((conv_color[*vbuf8>>4])>>pwm_cnt)&0x01;
+											*vbuf8++;
+										}
+										
+									}
+									//pixels=pixels<<1;
+									*out_buf32++=pixels;
+								}
+							}
+						}
+						if (active_mode==g_mode_320x240x8bpp){
+						//для 8-битного буфера
+							i_pal=(((line_i & hw_mode.is_flash_line) + (frame_i & hw_mode.is_flash_frame)) & 1);
+							if(vbuf!=NULL){
+								vbuf8=vbuf+(line*g_buf.width);
+								ovlbuf8 = NULL;
+								if((*g_buf.handler)!=NULL){
+									if((*g_buf.handler)(line)){
+										ovlbuf8 = g_buf.overlay;
+									}
+								}
+								int interleave=0;
+								uint32_t pixels = 0;
+								uint8_t pix = 0;
+								uint8_t opix = 0;
+								uint16_t mix = 0;
+
+								for(int i=hw_mode.H_visible_len/16;i--;){
+									if(ovlbuf8 != NULL){
+										interleave=0;
+										if(graphics_frame_count%2)interleave=1;
+										for(int j=0;j<8;j++){
+											opix = *ovlbuf8++;	
+											pix =(opix)<0x10?(opix+PALETTE_SHIFT):(*vbuf8);
+											//mix=0;//(((i_pal+interleave)&1)*256);
+											interleave++;
+											*vbuf8++;
+											pixels=pixels>>1;
+											pixels|=conv_color[pix];
+											opix = *ovlbuf8++;	
+											uint8_t pix =(opix)<0x10?(opix+PALETTE_SHIFT):(*vbuf8);
+											//mix=0;//(((i_pal+interleave)&1)*256);
+											interleave++;
+											*vbuf8++;
+											pixels=pixels>>1;
+											pixels|=conv_color[pix];
+										}
+									} else {
+										interleave=0;
+										//if(graphics_frame_count%2)interleave=1;
+										for(int j=0;j<8;j++){
+											pix =*vbuf8++;
+											mix=(pix<PALETTE_IDX_INC)?(((i_pal+interleave)&1)*48):(((i_pal+interleave)&1)*8); //48/16
+											pixels=pixels>>1;
+											pixels|= pix<PALETTE_SHIFT?conv_color[pix+mix]:conv_color[pix];
+											interleave++;
+											pix =*vbuf8++;
+											mix=(pix<PALETTE_IDX_INC)?(((i_pal+interleave)&1)*48):(((i_pal+interleave)&1)*8); //48/16
+											interleave++;
+											pixels=pixels>>1;
+											pixels|= pix<PALETTE_SHIFT?conv_color[pix+mix]:conv_color[pix];
+										}
+									}
+									*out_buf32++=pixels;
+									
+									/*
+									uint32_t pixels = 0;
+									//if(graphics_frame_count%2)pixels=0xAAAA;
+									for(int j=0;j<8;j++){
+										if(ovlbuf8 != NULL){ //if((i>15)&&(i<(15+128))&&
+											uint16_t pix = ((*ovlbuf8++)<<8)|(*ovlbuf8++);
+											pixels=pixels>>1;
+											pixels|= conv_color[(((pix&0xFF00)>>8)<0x10)?((pix&0xFF00)>>8):(*vbuf8)];
+											*vbuf8++;
+											//pixels|= (((pix&0xF0)>>8)>0?0x0000:0x8000);
+											pixels=pixels>>1;
+											pixels|= conv_color[((pix&0xFF)<0x10)?(pix&0xFF):(*vbuf8)];
+											//pixels|= ((pix&0x0F)>0?0x0000:0x8000);
+											*vbuf8++;
+										} else {
+											pixels=pixels>>1;
+											pixels|= conv_color[*vbuf8++];//((conv_color[*vbuf8&0x0f])>>pwm_cnt)&0x01;
+											pixels=pixels>>1;
+											pixels|= conv_color[*vbuf8++];//((conv_color[*vbuf8>>4])>>pwm_cnt)&0x01;
+										}
+										
+									}
+									//pixels=pixels<<1;
+									*out_buf32++=pixels;
+									*/
+								}
+							}
+						}
+						break;
+					default:
+						break;
+				}
+			}
+			if(line_active==(hw_mode.V_visible_lines)){
+				graphics_draw_screen=false;
+			}
+		}
 		rd_addr_DMA_CTRL[dma_inx_out]=(uint32_t)&lines_buf[lines_buf_inx];//включаем заполненный буфер в данные для вывода
 		dma_inx_out=(dma_inx_out+1)%(N_LINE_BUF_DMA);
 		dma_inx=(N_LINE_BUF_DMA-2+((dma_channel_hw_addr(dma_chan_ctrl)->read_addr-(uint32_t)rd_addr_DMA_CTRL)/4))%(N_LINE_BUF_DMA);
@@ -1248,6 +1560,9 @@ void graphics_set_palette(uint8_t i, uint32_t color888){
 		uint8_t B=(color888>>0)&0xff;
 				
 		conv_color[i] = (uint16_t)RGB565(R,G,B);
+	}
+	if(active_out==g_out_LCD_LS027B7DH01){
+		conv_color[i] = (uint16_t)color888&0x8000;
 	}
 	/*if (i==255){
 		printf("conv_color dump\n");
@@ -1358,6 +1673,10 @@ g_out graphics_test_output(){
 		gpio_init(idx);
 		gpio_set_dir(idx,GPIO_OUT);
 	}
+	
+	if((pull_up==0x13)&&(pull_down==0x14)){
+		return g_out_TFT_ST7789;
+	}
 	if((pull_up==0x13)&&(pull_down==0x00)){ //(pull_up==0xFF)&&
 		return g_out_TFT_ILI9341;
 	} else 
@@ -1457,6 +1776,9 @@ void graphics_init(g_out g_out,fr_rate rate){
 		case g_out_TFT_ILI9341V:
 		case g_out_TFT_GC9A01:
 			offs_prg0 = pio_add_program(PIO_VIDEO, &program_pio_TFT);
+			break;
+		case g_out_LCD_LS027B7DH01:
+			offs_prg0 = pio_add_program(PIO_VIDEO, &mono_lcd_program);
 			break;
 		default:
 			return;
@@ -1790,12 +2112,54 @@ Reg FPS
 			pio_sm_set_enabled(PIO_VIDEO, SM_video, true);
 			
 			break;
+		case g_out_LCD_LS027B7DH01 :
+			//printf("LCD SM ");
+			sm_config_set_wrap(&c_c, offs_prg0+mono_lcd_wrap_target, offs_prg0 + mono_lcd_wrap);
+			sm_config_set_sideset(&c_c, 1, false, false);
+	
+			for(int i=0;i<8;i++){
+				gpio_set_slew_rate(beginVideo_PIN+i,GPIO_SLEW_RATE_FAST);
+				pio_gpio_init(PIO_VIDEO, beginVideo_PIN+i);
+				gpio_set_drive_strength(beginVideo_PIN+i,GPIO_DRIVE_STRENGTH_4MA);
+				gpio_set_slew_rate(beginVideo_PIN+i,GPIO_SLEW_RATE_FAST);
+			}
 
+			gpio_init(TFT_DC_PIN);
+			gpio_set_dir(TFT_DC_PIN,GPIO_OUT);
+			gpio_put(TFT_DC_PIN, 0);
+			gpio_init(TFT_RST_PIN);
+			gpio_set_dir(TFT_RST_PIN,GPIO_OUT);
+			gpio_put(TFT_RST_PIN, 0);
+				
+			sm_config_set_set_pins(&c_c, beginVideo_PIN, 1);	// Configure DC CS pin to drive by (set) pio asm command
+			sm_config_set_out_pins(&c_c, beginVideo_PIN+6, 1);	// Configure Data pin to drive by (out) pio asm command
+			sm_config_set_sideset_pins(&c_c,beginVideo_PIN+7);	// Configure Clock pin to drive by (sideset) pio asm command
+			pio_sm_set_consecutive_pindirs(PIO_VIDEO, SM_video, beginVideo_PIN, 8, true); //конфигурация пинов на выход
+			sm_config_set_fifo_join(&c_c,PIO_FIFO_JOIN_TX);		// merge 4*32 bit RX stack to 4*32 bit TX stack
+			sm_config_set_out_shift(&c_c, true, true, 32);	// 32 bit out maximum per one PULL command
+			
+			//sm_config_set_clkdiv(&c_c, hw_mode.CLK_SPD);
+			sm_config_set_clkdiv(&c_c, LCD_CLK_DIV);
+
+			uint32_t ldiv = PIO_VIDEO->sm[SM_video].clkdiv;
+			//printf("State machine div:%ld\n",ldiv);
+
+			pio_sm_init(PIO_VIDEO, SM_video, offs_prg0, &c_c);
+			pio_sm_set_enabled(PIO_VIDEO, SM_video, true);
+			//printf(" - ok\n");
+
+			//printf("LCD prepare buffer");
+			lcd_prepare_buffer();
+			//printf(" - ok\n");
+			//printf("LCD Power on");
+			lcd_PowerOn();
+			//printf(" - ok\n");
+		
 		default:
-			return;
 			break;
 	}
 
+	//printf("Сonfig Main DMA");
 	//настройки DMA
 
 	//основной рабочий канал
@@ -1808,13 +2172,13 @@ Reg FPS
 	if(active_out==g_out_VGA){
 		channel_config_set_transfer_data_size(&cfg_dma, DMA_SIZE_8);
 	} 
+
 	if(active_out>g_out_HDMI){
 		channel_config_set_transfer_data_size(&cfg_dma, DMA_SIZE_32);
 	}
 	channel_config_set_chain_to(&cfg_dma, dma_chan_ctrl);// chain to other channel
 	channel_config_set_read_increment(&cfg_dma, true);
 	channel_config_set_write_increment(&cfg_dma, false);
-
 
 	uint dreq=0;
 
@@ -1846,7 +2210,7 @@ Reg FPS
 		);
 	} 
 
-	if(active_out>g_out_HDMI){
+	if((active_out>g_out_HDMI)&&(active_out<g_out_LCD_LS027B7DH01)){
 		channel_config_set_dreq(&cfg_dma, pio_get_dreq(PIO_VIDEO, SM_video, true));
 		dma_channel_configure(
 			dma_chan,
@@ -1857,6 +2221,20 @@ Reg FPS
 			false			// Don't start yet
 		);	
 	}
+	
+	if(active_out==g_out_LCD_LS027B7DH01){
+		channel_config_set_dreq(&cfg_dma, pio_get_dreq(PIO_VIDEO, SM_video, true));
+		dma_channel_configure(
+			dma_chan,
+			&cfg_dma,
+			&PIO_VIDEO->txf[SM_video],	// Write address //&pio->txf[sm]
+			&lines_buf[0],   // read address
+			54,
+			false			// Don't start yet
+		);	
+	}	
+	//printf(" - ok\n");
+	//printf("Сonfig Control DMA");
 
 	//контрольный канал для основного
 	cfg_dma = dma_channel_get_default_config(dma_chan_ctrl);
@@ -1931,9 +2309,12 @@ Reg FPS
 			true										// start yet
 		);
 	}
-
+	//printf(" - ok\n");
+	//printf("Start DMA");
 	dma_start_channel_mask((1u << dma_chan_ctrl)) ;
+	//printf(" - ok\n");
 
+	//printf("Init refresh timer");
     int hz=0;
 
     switch (rate){
@@ -1955,13 +2336,24 @@ Reg FPS
     }
 	if(active_out<g_out_TFT_ST7789){
 		if (!add_repeating_timer_us(1000000 / hz, video_timer_callback, NULL, &video_timer)) {
+			//printf(" - error\n");
 			return ;
 		}
-	} else {
+	} 
+	if((active_out>g_out_HDMI)&&(active_out<g_out_LCD_LS027B7DH01)){
 		hz=150000;
 		if (!add_repeating_timer_us(1000000 / hz, video_timer_callback, NULL, &video_timer)) {
+			//printf(" - error\n");
+			return ;
+		}
+	}
+	if(active_out==g_out_LCD_LS027B7DH01){
+		hz=1500;
+		if (!add_repeating_timer_us(1000000 / hz, video_timer_callback, NULL, &video_timer)) {
+			//printf(" - error\n");
 			return ;
 		}
 
 	}
+	//printf(" - ok\n");
 };

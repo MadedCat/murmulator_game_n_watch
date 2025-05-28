@@ -36,12 +36,14 @@
 #endif
 */
 /*
-#define TFT_CS_PIN		(6)
-#define TFT_RST_PIN		(8)
-#define TFT_LED_PIN		(9)
-#define TFT_DC_PIN		(10)
-#define TFT_DATA_PIN	(12)
-#define TFT_CLK_PIN		(13) 
+#define TFT_CS_PIN		(6)         //SHARP LCD - SCS		(3)
+#define TFT_RST_PIN		(8)         //SHARP LCD - DISP		(5)
+#define TFT_LED_PIN		(9)         //SHARP LCD - ---		(-)
+#define TFT_DC_PIN		(10)        //SHARP LCD - EXTCOMIN	(4)
+#define TFT_DATA_PIN	(12)        //SHARP LCD - SI		(2)
+#define TFT_CLK_PIN		(13)        //SHARP LCD - SCLK		(1)
+                                    //SHARP LCD - GND       (9,10)
+                                    //SHARP LCD - VCC       (6,7)+5V
 */
 
 #define RGB888(r, g, b) ((r<<16) | (g << 8 ) | b )
@@ -54,7 +56,7 @@ extern uint32_t graphics_frame_count;
 typedef enum g_mode{
     g_mode_320x240x8bpp,
     g_mode_320x240x4bpp,
-}g_mode;
+}g_mode; 
 
 typedef enum fr_rate{
     rate_60Hz = 0,
@@ -71,14 +73,15 @@ typedef enum rotate{
 }rotate;
 
 typedef enum g_out{
-    g_out_AUTO          = 0,
-    g_out_VGA           = 1,
-    g_out_HDMI          = 2,
-    g_out_TFT_ST7789    = 3,
-    g_out_TFT_ST7789V   = 4,
-    g_out_TFT_ILI9341   = 5,
-    g_out_TFT_ILI9341V  = 6,
-    g_out_TFT_GC9A01    = 7    
+	g_out_AUTO          = 0,
+	g_out_VGA           = 1,
+	g_out_HDMI          = 2,
+	g_out_TFT_ST7789    = 3,
+	g_out_TFT_ST7789V   = 4,
+	g_out_TFT_ILI9341   = 5,
+	g_out_TFT_ILI9341V  = 6,
+	g_out_TFT_GC9A01    = 7,
+	g_out_LCD_LS027B7DH01 = 8
 }g_out;
 
 g_out graphics_test_output();
