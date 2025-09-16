@@ -33,15 +33,13 @@ set(PICO_PLATFORM "rp2040" CACHE STRING "Chip type")
 
 set (VERSION_MAJOR 0)
 set (VERSION_MINOR 1)
-set (VERSION_PATCH 17)
+set (VERSION_PATCH 18)
 set (SOFT_VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 set (SOFT_VERSION_FN ${VERSION_MAJOR}_${VERSION_MINOR}_${VERSION_PATCH})
 
 configure_file ("src/config.h.in" "../src/config.h" @ONLY)
 
 include(pico_sdk_import.cmake)
-
-project(murmulator C CXX ASM)
 
 
 
@@ -51,7 +49,14 @@ project(murmulator C CXX ASM)
 #option(TV "Enable TV composite output" OFF)
 #option(SOFTTV "Enable TV soft composite output" OFF)
 
-SET(PROJECT_NAME "Murmulator_GnW_vga-hdmi-tft_${SOFT_VERSION_FN}_m1_p1")
+project(Murmulator C CXX ASM)
+
+SET(CMAKE_PROJECT_NAME "Murmulator_GnW_vga-hdmi-tft_${SOFT_VERSION_FN}_m1_p1")
+
+project(${CMAKE_PROJECT_NAME} VERSION 0.1.18 )
+
+message("CMAKE_PROJECT_NAME = ${CMAKE_PROJECT_NAME}")
+
 SET(BUILD_NAME "${PROJECT_NAME}_${SOFT_VERSION}")
 
 set(OUTPUT_DIR "${CMAKE_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}") #/bin/

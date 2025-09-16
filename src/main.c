@@ -4,7 +4,7 @@
 
 // #define PICO_FLASH_SIZE_BYTES (4 * 1024 * 1024)
 
-#define DEBUG_DELAY
+//#define DEBUG_DELAY
 
 //#define DEBUG_BLINK
 
@@ -88,6 +88,7 @@ extern uint32_t graphics_frame_count;
 
 #include "util_i2c_kbd.h" // i2c keyboard
 #include "../lib/sound/i2s.h"
+#include "sound.h"
 
 extern void i2s_out(int16_t l_out,int16_t r_out);
 
@@ -1037,6 +1038,8 @@ static int outR_signed=0;
 static long mixL=0;
 static long mixR=0;
 
+bool mute_main=false;
+
 /*
 void FAST_FUNC(hw_zx_set_beep_out)(uint8_t val){
 
@@ -1076,11 +1079,14 @@ volatile uint16_t audio_buffer_idx =0;
 //#pragma GCC optimize("-Ofast")
 //bool __scratch_y("sound_ayemu") AY_timer_callback(repeating_timer_t *rt)
 bool FAST_FUNC(Sound_timer_callback)(repeating_timer_t *rt){
-	
+	if(mute_main) return true;	
 	outL_old=outL;
 	outR_old=outR;
 	outL=((gw_audio_buffer[audio_buffer_idx]&0x01) << 7);
 	outR=((gw_audio_buffer[audio_buffer_idx]&0x01) << 7);
+	if(audio_buffer_idx==(GW_AUDIO_BUFFER_LENGTH)){
+		outL=outR=0;
+	}
 	if(cfg_sound_out_mode==OUT_PWM){
 		pwm_set_gpio_level(ZX_AY_PWM_PIN0,(uint8_t)((outR*cfg_volume)/100)); // Право
 		pwm_set_gpio_level(ZX_AY_PWM_PIN1,(uint8_t)((outL*cfg_volume)/100)); // Лево
@@ -1149,7 +1155,7 @@ bool Init_Sound(){
 		}
 	
 		short int rate = SOUND_SAMPLE_RATE;
-		if (!add_repeating_timer_us(-1000000 / rate, Sound_timer_callback, NULL, &soft_sound_timer)) {
+		if (!add_repeating_timer_us( 1000000 / rate, Sound_timer_callback, NULL, &soft_sound_timer)) { //-1000000
 			////printf("Failed to add timer\n");
 			return false;
 		}
@@ -1192,7 +1198,30 @@ bool FAST_FUNC(emulation_timer_callback)(repeating_timer_t *rt){
 }
 */
 
+uint32_t ptr=0;
 
+repeating_timer_t intro_sound_timer;
+
+bool FAST_FUNC(intro_timer_callback)(repeating_timer_t *rt){
+	outL_old=outL;
+	outR_old=outR;
+	outL=outR=(intro_sound[ptr++]);	
+	if(ptr>=INTRO_SOUND_LEN){ptr=0;}	
+	if(cfg_sound_out_mode==OUT_PWM){
+		pwm_set_gpio_level(ZX_AY_PWM_PIN0,(uint8_t)((outR*cfg_volume)/100)); // Право
+		pwm_set_gpio_level(ZX_AY_PWM_PIN1,(uint8_t)((outL*cfg_volume)/100)); // Лево
+	}
+	if(cfg_sound_out_mode==OUT_PCM){
+		mixL=1;
+		mixR=1;
+		if((outL!=outL_old)||(outR!=outR_old)){
+			mixL = (2*(mixL+outL))-((mixL*outL)/128)-128;
+			mixR = (2*(mixR+outR))-((mixR*outR)/128)-128;
+			i2s_out((int)(((int)(mixR)*4)*(cfg_volume/CFG_VOLUME_STEP)),(int)(((int)(mixL)*4)*(cfg_volume/CFG_VOLUME_STEP)));
+		}
+	}
+	return true;
+}
 
 /*
 void load_z80_file(char* file_name,short int slot){
@@ -1814,6 +1843,13 @@ int main(void){
 			draw_mur_logo_big((SCREEN_W-LOGO_PIX_WIDTH)/2,((SCREEN_H-LOGO_PIX_HEIGHT)/2),2);
 			//(SCREEN_W-LOGO_PIX_WIDTH)/2)//((SCREEN_H-LOGO_PIX_HEIGHT)/2)
 			ticker=0;
+			mute_main=true;
+			short int rate = 16384;
+			if (!add_repeating_timer_us( 1000000/rate, intro_timer_callback, NULL, &intro_sound_timer)) {
+				printf("Failed to add sound timer\n");
+				return false;
+			}
+
 			uint8_t repeat=0;
 			printf("Enter Boot Screen Mode\n");
 			while(true){
@@ -1854,6 +1890,9 @@ int main(void){
 				}
 			}
 			//convert_kb_u_to_kb_zx(&kb_st_ps2,zx_write_buffer->kb_data);
+			cancel_repeating_timer(&intro_sound_timer);
+			ptr=0;
+			mute_main=false;			
 			joy_pressed=false;
 		}
 		//BOOT SCREEN
@@ -2910,7 +2949,8 @@ int main(void){
    				}
 			} else {
 				updatePaletteGame((uint8_t*)gw_background_pal, gw_head.background_palette_size);
-				gw_set_background();				
+				gw_set_background();
+				start_watch_mode();
 			}
 
 			gw_system_sound_init();

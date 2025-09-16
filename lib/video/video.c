@@ -572,13 +572,13 @@ uint8_t tempcmd[7];
 //#define MADCTL_ROW_COLUMN_EXCHANGE (1<<5)
 //#define MADCTL_COLUMN_ADDRESS_ORDER_SWAP (1<<6)
 
-#define MADCTL_MY 0x80  ///< Bottom to top
-#define MADCTL_MX 0x40  ///< Right to left
-#define MADCTL_MV 0x20  ///< Reverse Mode
-#define MADCTL_ML 0x10  ///< LCD refresh Bottom to top
-#define MADCTL_RGB 0x00 ///< Red-Green-Blue pixel order
-#define MADCTL_BGR 0x08 ///< Blue-Green-Red pixel order
-#define MADCTL_MH 0x04  ///< LCD refresh right to left
+#define MADCTL_MY  0x80  ///< Bottom to top
+#define MADCTL_MX  0x40  ///< Right to left
+#define MADCTL_MV  0x20  ///< Reverse Mode
+#define MADCTL_ML  0x10  ///< LCD refresh Bottom to top
+#define MADCTL_RGB 0x00  ///< Red-Green-Blue pixel order
+#define MADCTL_BGR 0x08  ///< Blue-Green-Red pixel order
+#define MADCTL_MH  0x04  ///< LCD refresh right to left
 
 // Format: cmd length (including cmd byte), post delay in units of 5 ms, then cmd payload
 // Note the delays have been shortened a little
