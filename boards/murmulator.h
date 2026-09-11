@@ -24,6 +24,7 @@
 #define NES_GPIO_LAT 15
 #define NES_GPIO_DATA1 16
 #define NES_GPIO_DATA2 17
+#define JOY_I2C_PORT i2c1
 
 // VGA 8 pins starts from pin:
 #define VGA_BASE_PIN 6
