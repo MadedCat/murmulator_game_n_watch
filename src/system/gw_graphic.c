@@ -65,21 +65,7 @@ static inline uint8_t rgb_multiply_8bits(uint8_t bg, uint8_t sg){
 	//printf("sg:[%02X]\n",sg);
 	//return (uint8_t)((bg+(PALETTE_IDX_INC*sg))&0xFF);
 
-	if (gw_head.flags & FLAG_RENDERING_LCD_INVERTED){
-		if(sg==0) return (uint8_t)((bg+(PALETTE_IDX_INC*2))&0xFF);
-		if(sg==1) return (uint8_t)((bg+(PALETTE_IDX_INC*3))&0xFF);
-		if(sg==2) return (uint8_t)((bg+(PALETTE_IDX_INC*4))&0xFF);
-		if(sg==4) return (uint8_t)((bg+(PALETTE_IDX_INC*1))&0xFF);
-		return (uint8_t)(bg&0xFF);
-	} else {
-		if(sg==4) return (uint8_t)((bg+(PALETTE_IDX_INC*2))&0xFF);
-		if(sg==0) return (uint8_t)((bg+(PALETTE_IDX_INC*3))&0xFF);
-		if(sg==1) return (uint8_t)((bg+(PALETTE_IDX_INC*4))&0xFF);
-		if(sg==2) return (uint8_t)((bg+(PALETTE_IDX_INC*1))&0xFF);
-		return (uint8_t)(bg);
-	}	
 
-	/*
 	if (gw_head.flags & FLAG_RENDERING_LCD_INVERTED){
 		if(sg==0) return (uint8_t)((bg+(PALETTE_IDX_INC*2))&0xFF);
 		if(sg==4) return (uint8_t)((bg+(PALETTE_IDX_INC*1))&0xFF);
@@ -89,7 +75,6 @@ static inline uint8_t rgb_multiply_8bits(uint8_t bg, uint8_t sg){
 		if(sg==0) return (uint8_t)((bg+(PALETTE_IDX_INC*3))&0xFF);
 		return (uint8_t)(bg);
 	}
-	*/
 
 	return (uint8_t)(bg);
 
