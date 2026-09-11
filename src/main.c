@@ -1483,7 +1483,11 @@ int main(void){
 	#endif
 	*/
 	#ifdef VGA_HDMI
-		set_sys_clock_khz(315000, false);
+		#if PICO_RP2350
+			set_sys_clock_khz(252000, false);
+		#else
+			set_sys_clock_khz(315000, false);
+		#endif
 	#endif
 	#if COMPOSITE_TV||SOFT_COMPOSITE_TV
 		set_sys_clock_khz(378000, false);
