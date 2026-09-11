@@ -78,15 +78,15 @@ color:
 typedef uint8_t color_t;
 
 bool draw_pixel(int x,int y,color_t color);
-void draw_text(int x,int y,char* text,color_t colorText,color_t colorBg);
-void draw_text_len(int x,int y,char* text,color_t colorText,color_t colorBg,int len);
+void draw_text(int x,int y,const char* text,color_t colorText,color_t colorBg);
+void draw_text_len(int x,int y,const char* text,color_t colorText,color_t colorBg,int len);
 void draw_line(int x0,int y0, int x1, int y1,color_t color);
 //void draw_circle(int x0,int y0,  int r,color_t color);
 void init_screen(uint8_t* scr_buf,int scr_width,int scr_height,graph_mode mode);
 void draw_rect(int x,int y,int w,int h,color_t color,bool filled);
 void ShowScreenshot(uint8_t* buffer,int xPos,int yPos);
-void draw_text5x7(int x,int y,char* text,color_t colorText,color_t colorBg);
-void draw_text5x7_len(int x,int y,char* text,color_t colorText,color_t colorBg,int len);
-void draw_bufline_text_len(uint8_t* ptr, int line, char* text,color_t colorText,color_t colorBg, int len);
+void draw_text5x7(int x,int y,const char* text,color_t colorText,color_t colorBg);
+void draw_text5x7_len(int x,int y,const char* text,color_t colorText,color_t colorBg,int len);
+void draw_bufline_text_len(uint8_t* ptr, int line, const char* text,color_t colorText,color_t colorBg, int len);
 void draw_bufline_text5x7_len(uint8_t* ptr, int line,char* text,color_t colorText,color_t colorBg,int len);
 void draw_logo_header(short int xPos,short int yPos);

@@ -2400,13 +2400,13 @@ int main(void){
 							continue;
 						}						
 						/*--Return from Menu--*/
-						if(((KBD_DOWN)||(data_joy==D_JOY_DOWN))&&(fast_menu_index<(short int)fast_menu_lines[(uint8_t)fast_mode[(uint8_t)fast_mode_ptr]])){ fast_menu_index++; need_redraw=true;}
+						if(((KBD_DOWN)||(data_joy==D_JOY_DOWN))&&(fast_menu_index<fast_menu_lines[(uint8_t)fast_mode[(uint8_t)fast_mode_ptr]])){ fast_menu_index++; need_redraw=true;}
 						if(((KBD_UP)||(data_joy==D_JOY_UP))&&(fast_menu_index>=0)){fast_menu_index--;need_redraw=true;}
 						//начало и конец списка
-						if(((KBD_PAGE_DOWN)||(data_joy==D_JOY_RIGHT))&&(fast_menu_index<(short int)fast_menu_lines[(uint8_t)fast_mode[(uint8_t)fast_mode_ptr]])){fast_menu_index+=3;need_redraw=true;}
+						if(((KBD_PAGE_DOWN)||(data_joy==D_JOY_RIGHT))&&(fast_menu_index<fast_menu_lines[(uint8_t)fast_mode[(uint8_t)fast_mode_ptr]])){fast_menu_index+=3;need_redraw=true;}
 						if(((KBD_PAGE_UP)||(data_joy==D_JOY_LEFT))&&(fast_menu_index>0)){fast_menu_index-=3;need_redraw=true;}
-						if (fast_menu_index<0) fast_menu_index=(short int)fast_menu_lines[(uint8_t)fast_mode[(uint8_t)fast_mode_ptr]]-1;
-						if (fast_menu_index>=(short int)fast_menu_lines[(uint8_t)fast_mode[(uint8_t)fast_mode_ptr]]) fast_menu_index=0;
+						if (fast_menu_index<0) fast_menu_index=fast_menu_lines[(uint8_t)fast_mode[(uint8_t)fast_mode_ptr]]-1;
+						if (fast_menu_index>=fast_menu_lines[(uint8_t)fast_mode[(uint8_t)fast_mode_ptr]]) fast_menu_index=0;
 						if((KBD_ENTER)||(data_joy==D_JOY_A)){
 							need_redraw=true;
 							if(fast_mode[fast_mode_ptr]==FAST_MENU_MAIN){

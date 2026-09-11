@@ -253,7 +253,7 @@ typedef struct G_BUFFER{
 
 typedef struct ALLOWED_MODE{
 	g_out video_out;
-	V_MODE* video_mode;
+	const V_MODE* video_mode;
 }ALLOWED_MODE;
 
 //640x480x60 - vga

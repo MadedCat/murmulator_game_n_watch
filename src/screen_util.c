@@ -40,10 +40,10 @@ bool draw_pixel (int x,int y,color_t color){
 	return true;
 }
 
-void draw_text(int x,int y,char* text,color_t colorText,color_t colorBg){
+void draw_text(int x,int y,const char* text,color_t colorText,color_t colorBg){
 	if(strlen(text)==0) return;
 	for(int line=0;line<FONT_H;line++){
-		uint8_t* symb=(uint8_t*)text;
+		const uint8_t* symb=(const uint8_t*)text;
 		int yt=y+line;
 		int xt=x;
 		while(*symb){
@@ -57,12 +57,12 @@ void draw_text(int x,int y,char* text,color_t colorText,color_t colorBg){
 	}
 }
 
-void draw_text_len(int x,int y,char* text,color_t colorText,color_t colorBg,int len){
+void draw_text_len(int x,int y,const char* text,color_t colorText,color_t colorBg,int len){
 	if(strlen(text)==0) return;
 	//printf("text[%s]\t",text);
 
 	for(int line=0;line<FONT_H;line++){
-		uint8_t* symb=(uint8_t*)text;
+		const uint8_t* symb=(const uint8_t*)text;
 		//printf("\nch[%2X]\t",*symb);
 		//printf("addr[%4X]\t",*symb*FONT_H);
 		int yt=y+line;
@@ -218,10 +218,10 @@ void ShowScreenshot(uint8_t* buffer,int xPos,int yPos){
 }
 
 
-void draw_text5x7(int x,int y,char* text,color_t colorText,color_t colorBg){
+void draw_text5x7(int x,int y,const char* text,color_t colorText,color_t colorBg){
 	if(strlen(text)==0) return;
 	for(int line=0;line<FONT_5x7_H;line++){
-		uint8_t* symb=(uint8_t*)text;
+		const uint8_t* symb=(const uint8_t*)text;
 		int yt=y+line;
 		int xt=x;
 		while(*symb){
@@ -236,12 +236,12 @@ void draw_text5x7(int x,int y,char* text,color_t colorText,color_t colorBg){
 	}
 }
 
-void draw_text5x7_len(int x,int y,char* text,color_t colorText,color_t colorBg,int len){
+void draw_text5x7_len(int x,int y,const char* text,color_t colorText,color_t colorBg,int len){
 	if(strlen(text)==0) return;
 	//printf("text[%s]\t",text);
 
 	for(int line=0;line<FONT_5x7_H;line++){
-		uint8_t* symb=(uint8_t*)text;
+		const uint8_t* symb=(const uint8_t*)text;
 		//printf("\nch[%2X]\t",*symb);
 		//printf("addr[%4X]\t",*symb*FONT_5x7_H);
 		int yt=y+line;
@@ -270,10 +270,10 @@ void draw_text5x7_len(int x,int y,char* text,color_t colorText,color_t colorBg,i
 	//printf("\n");
 }
 
-void draw_bufline_text_len(uint8_t* ptr, int line, char* text,color_t colorText,color_t colorBg, int len){
+void draw_bufline_text_len(uint8_t* ptr, int line, const char* text,color_t colorText,color_t colorBg, int len){
 	if(strlen(text)==0) return;
 	if(line>FONT_H) return;
-	uint8_t* symb=(uint8_t*)text;
+	const uint8_t* symb=(const uint8_t*)text;
 	int inx_symb=0;
 	int inx_ptr=0;
 	while(*symb){
@@ -308,7 +308,7 @@ void draw_bufline_text_len(uint8_t* ptr, int line, char* text,color_t colorText,
 void draw_bufline_text5x7_len(uint8_t* ptr, int line,char* text,color_t colorText,color_t colorBg,int len){
 	if(strlen(text)==0) return;
 	if(line>FONT_5x7_H) return;
-	uint8_t* symb=(uint8_t*)text;
+	const uint8_t* symb=(const uint8_t*)text;
 	int inx_symb=0;
 	int inx_ptr=0;
 	while(*symb){
