@@ -25,11 +25,11 @@ endif()
 # ====================================================================================
 set(PICO_BOARD_HEADER_DIRS ${CMAKE_CURRENT_LIST_DIR}/boards )
 
-set(PICO_BOARD murmulator CACHE STRING "Board type")
-set(PICO_PLATFORM "rp2040" CACHE STRING "Chip type")
+#set(PICO_BOARD murmulator CACHE STRING "Board type")
+#set(PICO_PLATFORM "rp2040" CACHE STRING "Chip type")
 
-#set(PICO_BOARD murmulator2 CACHE STRING "Board type")
-#set(PICO_PLATFORM "rp2350" CACHE STRING "Chip type")
+set(PICO_BOARD murmulator2 CACHE STRING "Board type")
+set(PICO_PLATFORM "rp2350" CACHE STRING "Chip type")
 
 set (VERSION_MAJOR 0)
 set (VERSION_MINOR 1)

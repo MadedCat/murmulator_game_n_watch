@@ -15,9 +15,9 @@
 #define TIMER_PERIOD 500 //ms
 
 
-#define ZX_AY_PWM_PIN0 (26)
-#define ZX_AY_PWM_PIN1 (27)
-#define ZX_BEEP_PIN (28)
+#define ZX_AY_PWM_PIN0 (AUDIO_PWM_PIN)
+#define ZX_AY_PWM_PIN1 (AUDIO_PWM_PIN + 1)
+#define ZX_BEEP_PIN (AUDIO_BEEP_PIN)
 
 #define WORK_LED_PIN (25)
 

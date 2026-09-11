@@ -6,7 +6,7 @@
 #define PIO_VIDEO pio0
 #define PIO_VIDEO_ADDR pio0
 
-#define beginVideo_PIN (6)
+#define beginVideo_PIN (VGA_BASE_PIN)
 
 #define HDMI_PIN_invert_diffpairs (1)
 #define HDMI_PIN_RGB_notBGR (1)

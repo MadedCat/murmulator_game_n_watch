@@ -6,6 +6,10 @@
 #include "boards/pico.h"
 #endif
 
+// Runtime-selectable sound pins
+#define AUDIO_PWM_PIN 26
+#define AUDIO_BEEP_PIN 28
+
 // SDCARD
 #define SDCARD_PIN_SPI0_CS 5
 #define SDCARD_PIN_SPI0_SCK 2
@@ -19,7 +23,7 @@
 #define NES_GPIO_CLK 14
 #define NES_GPIO_LAT 15
 #define NES_GPIO_DATA1 16
-#define NES_GPIO_DATA2 16
+#define NES_GPIO_DATA2 17
 
 // VGA 8 pins starts from pin:
 #define VGA_BASE_PIN 6
@@ -39,7 +43,6 @@
 
 // Sound
 #if defined(AUDIO_PWM)
-#define AUDIO_PWM_PIN 26
 /// TODO: remove it
 #define AUDIO_DATA_PIN 26
 #define AUDIO_CLOCK_PIN 27

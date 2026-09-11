@@ -5,6 +5,15 @@
 #include "boards/pico.h"
 #endif
 
+#if PICO_RP2350
+#define PSRAM_CS1_GPIO_RP2350A 8
+#define PSRAM_CS1_GPIO_RP2350B 47
+#endif
+
+// Runtime-selectable sound pins
+#define AUDIO_PWM_PIN 10
+#define AUDIO_BEEP_PIN 9
+
 // 16MB flash
 #define PICO_FLASH_SIZE_BYTES 16777216
 // SDCARD
@@ -18,8 +27,9 @@
 
 // NES Gamepad
 #define NES_GPIO_CLK 20
-#define NES_GPIO_DATA 26
 #define NES_GPIO_LAT 21
+#define NES_GPIO_DATA1 26
+#define NES_GPIO_DATA2 27
 
 // VGA 8 pins starts from pin:
 #define VGA_BASE_PIN 12
@@ -39,7 +49,6 @@
 
 // Sound
 #if defined(AUDIO_PWM)
-#define AUDIO_PWM_PIN 9
 #define AUDIO_DATA_PIN 9
 #define AUDIO_CLOCK_PIN 10
 #else
