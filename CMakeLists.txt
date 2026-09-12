@@ -25,11 +25,11 @@ endif()
 # ====================================================================================
 set(PICO_BOARD_HEADER_DIRS ${CMAKE_CURRENT_LIST_DIR}/boards )
 
-set(PICO_BOARD murmulator CACHE STRING "Board type")
-set(PICO_PLATFORM "rp2040" CACHE STRING "Chip type")
+#set(PICO_BOARD murmulator CACHE STRING "Board type")
+#set(PICO_PLATFORM "rp2040" CACHE STRING "Chip type")
 
-#set(PICO_BOARD murmulator2 CACHE STRING "Board type")
-#set(PICO_PLATFORM "rp2350" CACHE STRING "Chip type")
+set(PICO_BOARD murmulator2 CACHE STRING "Board type")
+set(PICO_PLATFORM "rp2350" CACHE STRING "Chip type")
 
 set (VERSION_MAJOR 0)
 set (VERSION_MINOR 1)
@@ -49,11 +49,25 @@ include(pico_sdk_import.cmake)
 #option(TV "Enable TV composite output" OFF)
 #option(SOFTTV "Enable TV soft composite output" OFF)
 
-project(Murmulator C CXX ASM)
+if(PICO_BOARD STREQUAL "murmulator")
+    set(MURMULATOR_PREFIX "m1")
+elseif(PICO_BOARD STREQUAL "murmulator2")
+    set(MURMULATOR_PREFIX "m2")
+else()
+    message(FATAL_ERROR "Unsupported PICO_BOARD for firmware naming: ${PICO_BOARD}")
+endif()
 
-SET(CMAKE_PROJECT_NAME "Murmulator_GnW_vga-hdmi-tft_${SOFT_VERSION_FN}_m1_p1")
+if(PICO_PLATFORM MATCHES "^rp2040")
+    set(PLATFORM_PREFIX "p1")
+elseif(PICO_PLATFORM MATCHES "^rp2350")
+    set(PLATFORM_PREFIX "p2")
+else()
+    message(FATAL_ERROR "Unsupported PICO_PLATFORM for firmware naming: ${PICO_PLATFORM}")
+endif()
 
-project(${CMAKE_PROJECT_NAME} VERSION 0.1.18 )
+set(FW_PREFIX "${MURMULATOR_PREFIX}${PLATFORM_PREFIX}")
+set(FW_NAME "${FW_PREFIX}-gnw-VGA-HDMI-TFT-${SOFT_VERSION}")
+project(${FW_NAME} VERSION ${SOFT_VERSION} LANGUAGES C CXX ASM)
 
 message("CMAKE_PROJECT_NAME = ${CMAKE_PROJECT_NAME}")
 

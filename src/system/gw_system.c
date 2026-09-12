@@ -269,9 +269,10 @@ static void gw_system_sound_melody(unsigned char data){
 		}
 	}
 	//if(mspeaker_data>0)	printf("snd:[%02X]\n",mspeaker_data);
-	gw_audio_buffer[gw_audio_buffer_idx] = mspeaker_data;
-
-	gw_audio_buffer_idx++;
+	if (gw_audio_buffer_idx < (GW_AUDIO_BUFFER_LENGTH * 2)) {
+		gw_audio_buffer[gw_audio_buffer_idx] = mspeaker_data;
+		gw_audio_buffer_idx++;
+	}
 }
 
 void gw_writeR(unsigned char data) { gw_system_sound_melody(data); };

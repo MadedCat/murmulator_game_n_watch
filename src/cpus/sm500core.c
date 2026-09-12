@@ -90,7 +90,7 @@ void sm500_device_reset()
 //  buzzer controller
 //-------------------------------------------------
 
-inline void sm500_clock_melody()
+static inline void sm500_clock_melody()
 {
 	// R1 from divider or direct control, R2-R4 generic outputs
 	u8 mask = (m_r_mask_option == RMASK_DIRECT) ? 1 : (m_div >> m_r_mask_option & 1);
@@ -111,7 +111,7 @@ inline void sm500_clock_melody()
 //-------------------------------------------------
 //  execute
 //-------------------------------------------------
-inline bool sm500_wake_me_up()
+bool sm500_wake_me_up()
 {
 	// in halt mode, wake up after 1S signal or K input
 	if (m_k_active || m_1s)
@@ -129,7 +129,7 @@ inline bool sm500_wake_me_up()
 
 /********** 1 second timer *********/
 
-inline void sm500_div_timer_cb()
+static inline void sm500_div_timer_cb()
 {
 	m_div = (m_div + 1) & 0x7fff;
 
@@ -146,7 +146,7 @@ inline void sm500_div_timer_cb()
 	sm500_clock_melody();
 }
 
-inline void sm500_div_timer(int nb_inst)
+void sm500_div_timer(int nb_inst)
 {
 	if (nb_inst > 0)
 		for (int toctoc = 0; toctoc < m_clk_div * nb_inst; toctoc++)

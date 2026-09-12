@@ -6,8 +6,8 @@
 //#include "inttypes.h"
 #include "hardware/pio.h"
 
-#define PIN_PS2_DATA (1)
-#define PIN_PS2_CLK (0)
+#define PIN_PS2_DATA (PS2KBD_GPIO_FIRST + 1)
+#define PIN_PS2_CLK (PS2KBD_GPIO_FIRST)
 
 #define KB_PS_2_CMD_RESET (0xFF)
 #define KB_PS_2_CMD_SET_LED (0xED)

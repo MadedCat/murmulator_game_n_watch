@@ -1,10 +1,11 @@
 #pragma once
+#include <pico.h>
 #include "inttypes.h"
 
-#define WII_PORT (i2c1)
+#define WII_PORT (JOY_I2C_PORT)
 #define WII_CLOCK (100000) //4000
-#define WII_SDA_PIN (14)	//D_JOY_CLK_PIN (14)
-#define WII_SCL_PIN (15)	//D_JOY_LATCH_PIN (15)
+#define WII_SDA_PIN (NES_GPIO_CLK)	//D_JOY_CLK_PIN (NES_GPIO_CLK)
+#define WII_SCL_PIN (NES_GPIO_LAT)	//D_JOY_LATCH_PIN (NES_GPIO_LAT)
 #define WII_ADDRESS 0x52
 #define WII_BYTE_COUNT (21)
 #define WII_CONFIG_COUNT (21)

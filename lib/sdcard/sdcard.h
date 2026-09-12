@@ -1,12 +1,10 @@
 #ifndef _SDCARD_H_
 #define _SDCARD_H_
 
+#include "pico.h"
+
 #define SDCARD_SPI_BUS          spi0
 #define SDCARD_SPI_SPI_BRG      8000//Khz
-#define SDCARD_PIN_SPI0_SCK     2
-#define SDCARD_PIN_SPI0_MOSI    3
-#define SDCARD_PIN_SPI0_MISO    4
-#define SDCARD_PIN_SPI0_CS      5
 
 /* SPI pin assignment */
 #ifndef SDCARD_SPI_BUS
@@ -14,19 +12,19 @@
 #endif
 
 #ifndef SDCARD_PIN_SPI0_CS
-    #define SDCARD_PIN_SPI0_CS     22
+    #define SDCARD_PIN_SPI0_CS     5
 #endif
 
 #ifndef SDCARD_PIN_SPI0_SCK
-    #define SDCARD_PIN_SPI0_SCK    18
+    #define SDCARD_PIN_SPI0_SCK    2
 #endif
 
 #ifndef SDCARD_PIN_SPI0_MOSI
-    #define SDCARD_PIN_SPI0_MOSI   19
+    #define SDCARD_PIN_SPI0_MOSI   3
 #endif
 
 #ifndef SDCARD_PIN_SPI0_MISO 
-    #define SDCARD_PIN_SPI0_MISO   16
+    #define SDCARD_PIN_SPI0_MISO   4
 #endif
 
 #ifndef SDCARD_SPI_SPI_BRG

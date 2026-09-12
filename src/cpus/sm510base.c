@@ -166,26 +166,26 @@ void writeb(un8 ram_address,un8 ram_data)
 // External IO functions */
 /*************************/
 
-inline un8 m_read_k() 
+un8 m_read_k() 
 {
 	return gw_readK(m_s_out);
 }
 
-inline un8 m_read_ba()
+un8 m_read_ba()
 {
 	return gw_readBA();
 }
 
-inline un8 m_read_b()
+un8 m_read_b()
 {
 	return gw_readB();
 }
 
-inline void m_write_s(un8 data)
+void m_write_s(un8 data)
 {
 	m_s_out = data;
 }
-inline void m_write_r(un8 data)
+void m_write_r(un8 data)
 {
 	gw_writeR(data);
 }
@@ -193,7 +193,7 @@ inline void m_write_r(un8 data)
 //------------------------------------------------
 //  Program counter
 //-------------------------------------------------
-inline void increment_pc()
+void increment_pc()
 {
 	// PL(program counter low 6 bits) is a simple LFSR: newbit = (bit0==bit1)
 	// PU,PM(high bits) specify page, PL specifies steps within page

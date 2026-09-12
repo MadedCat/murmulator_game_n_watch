@@ -5,11 +5,12 @@ extern "C" {
 #endif
 
 #include "inttypes.h"
+#include <pico.h>
 #include "hardware/pio.h"
 
 #define PIO_I2S pio1
-#define I2S_DATA_PIN 26
-#define I2S_CLK_BASE_PIN 27
+#define I2S_DATA_PIN AUDIO_DATA_PIN
+#define I2S_CLK_BASE_PIN AUDIO_CLOCK_PIN
 
 void i2s_init();
 void i2s_deinit();

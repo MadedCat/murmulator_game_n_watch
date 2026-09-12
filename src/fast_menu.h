@@ -22,7 +22,7 @@
 #define FAST_MAIN_HARD_RESET	(8)
 
 
-const uint8_t __in_flash() *fast_menu_lines[FAST_MENU_COUNT]={(uint8_t*)9}; //,(uint8_t*)5,(uint8_t*)11,(uint8_t*)6,(uint8_t*)9
+const uint8_t fast_menu_lines[FAST_MENU_COUNT]={9}; //,5,11,6,9
 const char __in_flash() *fast_menu[FAST_MENU_COUNT][FAST_MENU_LINES]={
 	{ 
 		" [FILE BROWSER] ",
