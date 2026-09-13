@@ -154,14 +154,14 @@ bool Init_Wii_Joystick(){
 	printf("Begin Wii Init\n");
 
 	//PICO_ERROR_GENERIC
-	result=i2c_write_blocking(WII_PORT, WII_ADDRESS, &init_cmd0[0], 2, false); //Init 0
+	result=i2c_write_timeout_us(WII_PORT, WII_ADDRESS, &init_cmd0[0], 2, false, JOY_I2C_TIMEOUT_US); //Init 0
 	if(result!=2){
 		printf("Wii>Error first init\n");
 		WII_Init = false;
 		return false;
 	}
 	sleep_us(50);
-	result=i2c_write_blocking(WII_PORT, WII_ADDRESS, &init_cmd1[0], 2, false); //Disable encode
+	result=i2c_write_timeout_us(WII_PORT, WII_ADDRESS, &init_cmd1[0], 2, false, JOY_I2C_TIMEOUT_US); //Disable encode
 	if(result==2){
 		printf("Wii>Encrypted exchange disabled\n");
 	} else {
@@ -170,10 +170,10 @@ bool Init_Wii_Joystick(){
 		return false;
 	}
 	sleep_us(50);
-    result=i2c_write_blocking(WII_PORT, WII_ADDRESS, &init_cmd2[0], 1, false); //Read joy type
+    result=i2c_write_timeout_us(WII_PORT, WII_ADDRESS, &init_cmd2[0], 1, false, JOY_I2C_TIMEOUT_US); //Read joy type
 	if(result==1){
 		sleep_us(50);
-		result=i2c_read_blocking(WII_PORT, WII_ADDRESS, WII_Calibrate, WII_CONFIG_COUNT, false);
+		result=i2c_read_timeout_us(WII_PORT, WII_ADDRESS, WII_Calibrate, WII_CONFIG_COUNT, false, JOY_I2C_TIMEOUT_US);
 		if (result>WII_CONFIG_COUNT) {
 			printf("Wii>Failed to get controller type:%d\n",result);
 		} 
@@ -196,7 +196,7 @@ bool Init_Wii_Joystick(){
 		return false;		
 	}
 	sleep_us(50);
-	result=i2c_write_blocking(WII_PORT, WII_ADDRESS, &set_hires_cmd[0], 2, false); //Set Hi res
+	result=i2c_write_timeout_us(WII_PORT, WII_ADDRESS, &set_hires_cmd[0], 2, false, JOY_I2C_TIMEOUT_US); //Set Hi res
 	if(result==2){
 		printf("Wii>HiRes mode\n");
 	} else {
@@ -205,10 +205,10 @@ bool Init_Wii_Joystick(){
 		return false;
 	}	
 	sleep_ms(1);
-    result=i2c_write_blocking(WII_PORT, WII_ADDRESS, 0x00, 1, false); //Get calibration data
+    result=i2c_write_timeout_us(WII_PORT, WII_ADDRESS, 0x00, 1, false, JOY_I2C_TIMEOUT_US); //Get calibration data
     sleep_ms(1);
 	if(result==1){
-		result=i2c_read_blocking(WII_PORT, WII_ADDRESS, WII_Calibrate, 6, false);
+		result=i2c_read_timeout_us(WII_PORT, WII_ADDRESS, WII_Calibrate, 6, false, JOY_I2C_TIMEOUT_US);
     	if (result!= 6) {
         	printf("Wii>Failed to calibrate controller\n");
 			WII_Init = false;
@@ -242,9 +242,9 @@ uint8_t Wii_decode_joy(){
     uint8_t result;
     uint8_t decode = 0x00;
 	busy_wait_us(200);
-	i2c_write_blocking(WII_PORT, WII_ADDRESS, 0x00, 1, false);    
+	i2c_write_timeout_us(WII_PORT, WII_ADDRESS, 0x00, 1, false, JOY_I2C_TIMEOUT_US);    
 	busy_wait_us(200);
-	result = i2c_read_blocking(WII_PORT, WII_ADDRESS, &WII_Data[0], WII_BYTE_COUNT, false);
+	result = i2c_read_timeout_us(WII_PORT, WII_ADDRESS, &WII_Data[0], WII_BYTE_COUNT, false, JOY_I2C_TIMEOUT_US);
 	//printf("read count>%d\n",result);
 	if(result>=WII_BYTE_COUNT){
 		if((WII_Data[0]==0x00)&&(WII_Data[1]==0x00)&&(WII_Data[2]==0x00)&&(WII_Data[3]==0x00)) return 0xFF;
