@@ -11,7 +11,7 @@ extern uint8_t i2c_joy_data[16];
 
 static bool mcp23017_set_regaddr(uint8_t ADDR, uint8_t reg, bool nostop) {
     int ret;
-    ret = i2c_write_blocking(i2c_joy_port, ADDR, &reg, 1, nostop);
+    ret = i2c_write_timeout_us(i2c_joy_port, ADDR, &reg, 1, nostop, JOY_I2C_TIMEOUT_US);
     if (ret != 1) {
         // printf("MCP23017: failed to set register address: ADDR = %02x\n",ADDR);
         return false;
@@ -24,7 +24,7 @@ static bool mcp23017_read(uint8_t ADDR, uint8_t reg, uint8_t* buf, size_t n) {
     if (!mcp23017_set_regaddr(ADDR, reg, false)) {
         return false;
     }
-    ret = i2c_read_blocking(i2c_joy_port, ADDR, buf, n, false);
+    ret = i2c_read_timeout_us(i2c_joy_port, ADDR, buf, n, false, JOY_I2C_TIMEOUT_US);
     if (ret != n) {
         // printf("MCP23017: failed to read register value:\n");
         return false;
@@ -37,7 +37,7 @@ static bool mcp23017_write(uint8_t ADDR, uint8_t reg, const uint8_t* buf, size_t
     if (!mcp23017_set_regaddr(ADDR, reg, true)) {
         return false;
     }
-    ret = i2c_write_blocking(i2c_joy_port, ADDR, buf, n, false);   
+    ret = i2c_write_timeout_us(i2c_joy_port, ADDR, buf, n, false, JOY_I2C_TIMEOUT_US);   
     if (ret != n) {
         // printf("MCP23017: failed to write register value:\n");
         return false;
