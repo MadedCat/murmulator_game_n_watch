@@ -18,7 +18,12 @@
 #define KB_PS_2_KANA_LOCK_ON  (8)
 
 
+#ifdef BOARD_Z0
+// PIO0 has GPIO base 16 on z0 for HDMI; PS/2 on GPIO2/3 needs base 0 (PIO1)
+#define PIO_PS2 (pio1)
+#else
 #define PIO_PS2 (pio0)
+#endif
 #define SM_PS2 (0)
 
 #define ps2kbd_wrap_target 0

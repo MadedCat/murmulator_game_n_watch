@@ -17,7 +17,9 @@
 
 #define ZX_AY_PWM_PIN0 (AUDIO_PWM_PIN)
 #define ZX_AY_PWM_PIN1 (AUDIO_PWM_PIN + 1)
+#ifdef AUDIO_BEEP_PIN
 #define ZX_BEEP_PIN (AUDIO_BEEP_PIN)
+#endif
 
 #define WORK_LED_PIN (25)
 
@@ -32,7 +34,11 @@
 #include <pico/multicore.h>
 #include <pico/bootrom.h>
 #include <pico/rand.h>
+#ifndef BOARD_HDMI_ONLY
 #include <pico/stdio_usb.h>
+#else
+#include "usbhid.h"
+#endif
 #include <hardware/sync.h>
 #include <hardware/irq.h>
 #include <hardware/watchdog.h>
@@ -308,6 +314,9 @@ uint32_t rel_data_joy=0;
 
 
 void process_input(){
+	#ifdef BOARD_HDMI_ONLY
+	usbhid_task();
+	#endif
 	if(i2cKbdMode){
 		keyPressed = i2c_decode_kbd();
 	} else {
@@ -1141,16 +1150,20 @@ bool Init_Sound(){
 			printf("Set OUT PWM\n");
 			PWM_init_pin(ZX_AY_PWM_PIN0);
 			PWM_init_pin(ZX_AY_PWM_PIN1);
+			#ifdef ZX_BEEP_PIN
 			PWM_init_pin(ZX_BEEP_PIN);
+			#endif
 		}
 		if(cfg_sound_out_mode==OUT_PCM){
 			printf("Set OUT I2S\n");
 			gpio_init(ZX_AY_PWM_PIN0);
 			gpio_init(ZX_AY_PWM_PIN1);
-			gpio_init(ZX_BEEP_PIN);
 			gpio_set_dir(ZX_AY_PWM_PIN0,GPIO_OUT);
 			gpio_set_dir(ZX_AY_PWM_PIN1,GPIO_OUT);
+			#ifdef ZX_BEEP_PIN
+			gpio_init(ZX_BEEP_PIN);
 			gpio_set_dir(ZX_BEEP_PIN,GPIO_OUT);
+			#endif
 			i2s_init();
 		}
 	
@@ -1171,7 +1184,9 @@ void Deinit_Sound(){
 		if(cfg_sound_out_mode==OUT_PWM){
 			PWM_Deinit_pin(ZX_AY_PWM_PIN0);
 			PWM_Deinit_pin(ZX_AY_PWM_PIN1);
+			#ifdef ZX_BEEP_PIN
 			PWM_Deinit_pin(ZX_BEEP_PIN);
+			#endif
 		}
 		//gpio_deinit(TST_PIN);
 		if(cfg_sound_out_mode==OUT_PCM){
@@ -1268,15 +1283,24 @@ void input_init(){
 		joy_connected = false;
 	}
 	
+	#ifdef BOARD_HDMI_ONLY
+	// no I2C keyboard on PCp2: GPIO0/1 are the PS/2 port; USB HID keyboard in addition
+	i2cKbdMode = false;
+	usbhid_init();
+	printf ("USB HID Keyboard Started\n");
+	#else
 	if (i2c_kbd_start()){i2cKbdMode = true;}else{i2cKbdMode = false;}
 
 	short int i2c_state = i2c_kbd_data_in();
 	//printf ("i2c_state: %d\n",i2c_state);
+	#endif
 
 	if(!i2cKbdMode) {
 		//printf ("i2c Keyboard not connected\n");
+		#ifndef BOARD_HDMI_ONLY
 		i2c_kbd_deinit();	
 		busy_wait_ms(100);
+		#endif
 		start_PS2_capture();
 		printf ("PS/2 Keyboard Started\n");
 	} else {
@@ -1589,6 +1613,18 @@ int main(void){
 		cfg_hud_enable=DEF_CFG_HUD_MODE;
 		cfg_mobile_mode=DEF_CFG_MOBILE_MODE;
 	}
+	#ifdef BOARD_HDMI_ONLY
+	// PCp2 / z0p2: only HDMI is wired; the battery monitor (I2C on GPIO14/15)
+	// would take HDMI pins
+	cfg_video_out=g_out_HDMI;
+	#ifdef BOARD_Z0
+	// z0p2: sound is the PCM5102A I2S module on GPIO10..12 (no PWM jack)
+	cfg_sound_out_mode=OUT_PCM;
+	#else
+	cfg_sound_out_mode=OUT_PWM;
+	#endif
+	cfg_mobile_mode=MOBILE_MURM_OFF;
+	#endif
 
 	
 	//printf("*Settings read: %s\n",video_out_config[cfg_lcd_video_out]);
@@ -2587,7 +2623,9 @@ int main(void){
 									}
 								}							
 								if (settings_index==1){ //Sound out mode:
+									#ifndef BOARD_HDMI_ONLY // PWM only on PCp2
 									cfg_sound_out_mode+=menu_inc_dec;
+									#endif
 									if((cfg_sound_out_mode>MAX_CFG_OUT_MODE)&&(menu_inc_dec>0)){
 										cfg_sound_out_mode=0;
 									}
@@ -2604,6 +2642,7 @@ int main(void){
 										cfg_volume=0;
 									}
 								}
+								#ifndef BOARD_HDMI_ONLY // HDMI only on PCp2
 								if (settings_index==3){ //Video output:
 									cfg_video_out+=(uint8_t)menu_inc_dec;
 									if((cfg_video_out>MAX_CFG_VIDEO_MODE)&&(menu_inc_dec>0)){
@@ -2630,6 +2669,7 @@ int main(void){
 										//printf("Test framerate end \n");
 									//}
 								}	
+								#endif
 								if (settings_index==4){ //Video framerate:
 									cfg_frame_rate+=menu_inc_dec;
 									if((cfg_frame_rate>MAX_CFG_VIDEO_FREQ_MODE)&&(menu_inc_dec>0)){
@@ -2648,6 +2688,7 @@ int main(void){
 										if(test==0) break;
 									}
 								}
+								#ifndef BOARD_HDMI_ONLY // no battery monitor on PCp2
 								if (settings_index==5){ //Mobile Murmulator:
 									cfg_mobile_mode+=menu_inc_dec;
 									if((cfg_mobile_mode>MAX_CFG_MOBILE_MODE)&&(menu_inc_dec>0)){
@@ -2656,7 +2697,8 @@ int main(void){
 									if((cfg_mobile_mode>MAX_CFG_MOBILE_MODE)&&(menu_inc_dec<0)){
 										cfg_mobile_mode=DEF_CFG_MOBILE_MODE;
 									}
-								}								
+								}
+								#endif								
 								#ifdef VGA_HDMI
 								if((g_out)cfg_video_out>g_out_HDMI){
 									if (settings_index==6){ //LCD BrightLev:

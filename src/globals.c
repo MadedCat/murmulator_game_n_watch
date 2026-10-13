@@ -31,7 +31,9 @@ bool kbd_lock=false;
 
 #ifndef DEBUG_DISABLE_LOADERS
     __scratch_x("temp_data_x") uint8_t temp_buffer_x[TEMP_BUFF_SIZE_X];
-    __scratch_y("temp_data_y") uint8_t temp_buffer_y[TEMP_BUFF_SIZE_Y];
+    // not in SCRATCH_Y: 0xA00 bytes there overlap the bottom of the core 0 stack
+    // (0x20081800..0x20082000); SDK 2.2.0 rejects this layout at link time
+    uint8_t temp_buffer_y[TEMP_BUFF_SIZE_Y];
 #endif
 
 uint8_t sd_buffer[SD_BUFFER_SIZE];

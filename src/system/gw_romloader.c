@@ -25,8 +25,8 @@ __license__ = "GPLv3"
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include "..\util_sd.h"
-#include "..\screen_util.h"
+#include "../util_sd.h"
+#include "../screen_util.h"
 
 #define DUMP_DEBUG
 

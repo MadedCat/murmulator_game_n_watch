@@ -3,8 +3,12 @@
 
 #include "pico.h"
 
+#ifndef SDCARD_SPI_BUS
 #define SDCARD_SPI_BUS          spi0
+#endif
+#ifndef SDCARD_SPI_SPI_BRG
 #define SDCARD_SPI_SPI_BRG      8000//Khz
+#endif
 
 /* SPI pin assignment */
 #ifndef SDCARD_SPI_BUS
